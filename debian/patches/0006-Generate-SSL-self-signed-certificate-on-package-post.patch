@@ -1,0 +1,186 @@
+From ba8157ed0b61def49fe0fd28be18d0b71b84c854 Mon Sep 17 00:00:00 2001
+From: Aline Manera <alinefm@linux.vnet.ibm.com>
+Date: Wed, 9 Nov 2016 23:36:04 -0200
+Subject: [PATCH 6/9] Generate SSL self signed certificate on package post
+ installation script
+
+When Wok is installed from a package, the SSL self signed certificate should be
+created on package post installation script instead of on server starts
+up.
+
+That will be required to fix issue #175. As the nginx configuration will
+not be created on the fly, as the SSL cert/key must be there to do not make
+nginx fails.
+
+Signed-off-by: Aline Manera <alinefm@linux.vnet.ibm.com>
+---
+ contrib/DEBIAN/control.in  |  1 +
+ contrib/DEBIAN/postinst    |  1 +
+ contrib/DEBIAN/postrm      |  1 +
+ contrib/wok.spec.fedora.in | 10 ++++++----
+ contrib/wok.spec.suse.in   | 40 +++++++++++++++++++++++++---------------
+ src/wok/sslcert.py         |  2 +-
+ 6 files changed, 35 insertions(+), 20 deletions(-)
+
+diff --git a/contrib/DEBIAN/control.in b/contrib/DEBIAN/control.in
+index e585080..16f8afc 100644
+--- a/contrib/DEBIAN/control.in
++++ b/contrib/DEBIAN/control.in
+@@ -15,6 +15,7 @@ Depends: python-cherrypy3 (>= 3.2.0),
+          python-psutil (>= 0.6.0),
+          fonts-font-awesome,
+          logrotate,
++         openssl,
+          texlive-fonts-extra
+ Build-Depends: xsltproc,
+                gettext,
+diff --git a/contrib/DEBIAN/postinst b/contrib/DEBIAN/postinst
+index 54ea20d..473e515 100755
+--- a/contrib/DEBIAN/postinst
++++ b/contrib/DEBIAN/postinst
+@@ -20,6 +20,7 @@
+ 
+ systemd_exists=$(type /bin/systemctl > /dev/null 2>&1; echo $?)
+ if test $systemd_exists = "0"; then
++    openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem -out /etc/wok/wok-cert.pem -days 365 -nodes -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1 || :
+     /bin/systemctl enable wokd > /dev/null 2>&1
+     /bin/systemctl daemon-reload > /dev/null 2>&1
+     /bin/systemctl start wokd > /dev/null 2>&1
+diff --git a/contrib/DEBIAN/postrm b/contrib/DEBIAN/postrm
+index bfb1973..4b8c8ff 100755
+--- a/contrib/DEBIAN/postrm
++++ b/contrib/DEBIAN/postrm
+@@ -26,5 +26,6 @@ case "$1" in
+     ;;
+     purge)
+         rm -rf /var/log/wok /var/run/wok.pid /usr/share/wok/
++        rm /etc/wok/wok-key.pem /etc/wok/wok-cert.pem
+     ;;
+ esac
+diff --git a/contrib/wok.spec.fedora.in b/contrib/wok.spec.fedora.in
+index 057d585..822c480 100644
+--- a/contrib/wok.spec.fedora.in
++++ b/contrib/wok.spec.fedora.in
+@@ -20,6 +20,7 @@ Requires:	python-psutil >= 0.6.0
+ Requires:	fontawesome-fonts
+ Requires:	open-sans-fonts
+ Requires:	logrotate
++Requires:	openssl
+ BuildRequires:  firewalld
+ BuildRequires:	gettext-devel
+ BuildRequires:	libxslt
+@@ -76,27 +77,28 @@ install -Dm 0755 contrib/wokd.sysvinit %{buildroot}%{_initrddir}/wokd
+ 
+ %post
+ if [ $1 -eq 1 ] ; then
+-    /bin/systemctl enable wokd.service >/dev/null 2>&1 || :
+     # Initial installation
++    /bin/systemctl enable wokd.service >/dev/null 2>&1 || :
+     /bin/systemctl daemon-reload >/dev/null 2>&1 || :
++    openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem -out /etc/wok/wok-cert.pem -days 365 -nodes -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1 || :
+ fi
+ 
+-
+ %preun
+-
+ if [ $1 -eq 0 ] ; then
+     # Package removal, not upgrade
+     /bin/systemctl --no-reload disable wokd.service > /dev/null 2>&1 || :
+     /bin/systemctl stop wokd.service > /dev/null 2>&1 || :
+ fi
+-
+ exit 0
+ 
+ 
+ %postun
+ if [ "$1" -ge 1 ] ; then
+     /bin/systemctl try-restart wokd.service >/dev/null 2>&1 || :
++else
++    rm /etc/wok/wok-key.pem /etc/wok/wok-cert.pem
+ fi
++
+ exit 0
+ 
+ %clean
+diff --git a/contrib/wok.spec.suse.in b/contrib/wok.spec.suse.in
+index 8267f3e..e3c0707 100644
+--- a/contrib/wok.spec.suse.in
++++ b/contrib/wok.spec.suse.in
+@@ -21,6 +21,7 @@ Requires:	python-psutil >= 0.6.0
+ Requires:	fontawesome-fonts
+ Requires:	google-opensans-fonts
+ Requires:	logrotate
++Requires:	openssl
+ BuildRequires:  firewalld
+ BuildRequires:	gettext-tools
+ BuildRequires:	libxslt-tools
+@@ -51,29 +52,38 @@ make DESTDIR=%{buildroot} install
+ 
+ 
+ %post
+-%if 0%{?with_systemd}
+-    /bin/systemctl enable wokd.service >/dev/null 2>&1 || :
+-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+-%else
+-    chkconfig wokd on
+-%endif
++if [ $1 -eq 1 ] ; then
++    %if 0%{?with_systemd}
++        /bin/systemctl enable wokd.service >/dev/null 2>&1 || :
++        /bin/systemctl daemon-reload >/dev/null 2>&1 || :
++    %else
++        chkconfig wokd on
++    %endif
++    openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem -out /etc/wok/wok-cert.pem -days 365 -nodes -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1 || :
++fi
+ exit 0
+ 
+ 
+ %preun
+-%if 0%{?with_systemd}
+-    /bin/systemctl --no-reload disable wokd.service > /dev/null 2>&1 || :
+-    /bin/systemctl stop wokd.service > /dev/null 2>&1 || :
+-%else
+-    service wokd stop
+-%endif
++if [ $1 -eq 0 ] ; then
++    %if 0%{?with_systemd}
++        /bin/systemctl --no-reload disable wokd.service > /dev/null 2>&1 || :
++        /bin/systemctl stop wokd.service > /dev/null 2>&1 || :
++    %else
++        service wokd stop
++    %endif
++fi
+ exit 0
+ 
+ 
+ %postun
+-%if 0%{?with_systemd}
+-    /bin/systemctl try-restart wokd.service >/dev/null 2>&1 || :
+-%endif
++if [ "$1" -ge 1 ] ; then
++    %if 0%{?with_systemd}
++        /bin/systemctl try-restart wokd.service >/dev/null 2>&1 || :
++    %endif
++else
++    rm /etc/wok/wok-key.pem /etc/wok/wok-cert.pem
++fi
+ exit 0
+ 
+ %clean
+diff --git a/src/wok/sslcert.py b/src/wok/sslcert.py
+index a3dd551..45b1eb7 100644
+--- a/src/wok/sslcert.py
++++ b/src/wok/sslcert.py
+@@ -64,7 +64,7 @@ class SSLCert(object):
+         self.cert.set_not_after(nowPlusYear)
+ 
+         issuer = X509.X509_Name()
+-        issuer.CN = 'kimchi'
++        issuer.CN = 'wok'
+         issuer.O = 'kimchi-project.org'
+         self.cert.set_issuer(issuer)
+ 
+-- 
+2.7.4
+

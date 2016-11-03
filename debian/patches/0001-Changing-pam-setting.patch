@@ -1,23 +1,34 @@
-From aa0d1de64e8601dd84865da15197507d717cbe85 Mon Sep 17 00:00:00 2001
+From ced42f7aa3f7c20ff076766a1c72977de8e36b84 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Bonnard?= <frediz@linux.vnet.ibm.com>
 Date: Fri, 2 Oct 2015 14:04:57 +0200
 Subject: [PATCH] Changing pam setting
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 Instead of giving access to kimchi to all users in /etc/passwd, we
 rely on a specific kimchi pam service to which users should be added.
 This is part of some distro pam policy such as Debian/Ubuntu.
+
+Signed-off-by: Frédéric Bonnard <frediz@linux.vnet.ibm.com>
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 ---
  src/wok/auth.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/src/wok/auth.py b/src/wok/auth.py
+index 6b1c160..9580937 100644
 --- a/src/wok/auth.py
 +++ b/src/wok/auth.py
-@@ -143,7 +143,7 @@
+@@ -142,7 +142,7 @@ class PAMUser(User):
          return self.user
  
      @staticmethod
 -    def authenticate(username, password, service="passwd"):
-+    def authenticate(username, password, service="kimchi"):
++    def authenticate(username, password, service="wok"):
          '''Returns True if authenticate is OK via PAM.'''
          def _auth(result):
              def _pam_conv(auth, query_list, userData=None):
+-- 
+2.7.4
+

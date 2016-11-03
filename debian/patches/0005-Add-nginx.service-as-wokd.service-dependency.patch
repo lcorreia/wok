@@ -1,0 +1,111 @@
+From 003b8d53ab89c55a0449afe3e0dd845f81547ce8 Mon Sep 17 00:00:00 2001
+From: Aline Manera <alinefm@linux.vnet.ibm.com>
+Date: Wed, 9 Nov 2016 23:31:02 -0200
+Subject: [PATCH 5/9] Add nginx.service as wokd.service dependency
+
+To be able to run Wok properly, nginx must be running, so update the
+systemd configuration file to ensure that automatically.
+
+Also rename wokd.service.fedora to wokd.service.systemd as it is not
+Fedora specific file.
+
+Signed-off-by: Aline Manera <alinefm@linux.vnet.ibm.com>
+---
+ IBM-license-blacklist        |  2 +-
+ Makefile.am                  |  4 ++--
+ contrib/Makefile.am          |  2 +-
+ contrib/wokd.service.fedora  | 12 ------------
+ contrib/wokd.service.systemd | 14 ++++++++++++++
+ 5 files changed, 18 insertions(+), 16 deletions(-)
+ delete mode 100644 contrib/wokd.service.fedora
+ create mode 100644 contrib/wokd.service.systemd
+
+diff --git a/IBM-license-blacklist b/IBM-license-blacklist
+index 01a6514..bf3651a 100644
+--- a/IBM-license-blacklist
++++ b/IBM-license-blacklist
+@@ -17,7 +17,7 @@ contrib/DEBIAN/control.in
+ contrib/wok.spec.fedora.in
+ contrib/wok.spec.suse.in
+ contrib/wokd.logrotate.in
+-contrib/wokd.service.fedora
++contrib/wokd.service.systemd
+ docs/API/.*.md
+ docs/.*.md
+ docs/wokd.8.in
+diff --git a/Makefile.am b/Makefile.am
+index e9e5fa8..636dd1d 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -90,7 +90,7 @@ install-deb: install
+ 	cp -R $(top_srcdir)/contrib/DEBIAN $(DESTDIR)/
+ 	@if test -d "$(systemdsystemunitdir)" ; then \
+ 		$(MKDIR_P) $(DESTDIR)/$(systemdsystemunitdir); \
+-		cp -R contrib/wokd.service.fedora \
++		cp -R contrib/wokd.service.systemd \
+ 			$(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+ 	else \
+ 		$(MKDIR_P) $(DESTDIR)/etc/init; \
+@@ -137,7 +137,7 @@ ChangeLog:
+ install-data-local:
+ 	@if test -d "$(systemdsystemunitdir)" ; then \
+ 		mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
+-		$(INSTALL_DATA) contrib/wokd.service.fedora $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
++		$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+ 	else \
+ 		mkdir -p $(DESTDIR)/etc/init.d/; \
+ 		$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
+diff --git a/contrib/Makefile.am b/contrib/Makefile.am
+index 32fcfde..77af87c 100644
+--- a/contrib/Makefile.am
++++ b/contrib/Makefile.am
+@@ -24,7 +24,7 @@ SUBDIRS = DEBIAN
+ EXTRA_DIST = \
+ 	check_i18n.py \
+ 	wokd.sysvinit \
+-	wokd.service.fedora \
++	wokd.service.systemd \
+ 	wok.spec.fedora.in \
+ 	wokd-upstart.conf.debian \
+ 	wokd-upstart.conf.fedora \
+diff --git a/contrib/wokd.service.fedora b/contrib/wokd.service.fedora
+deleted file mode 100644
+index 33d88d8..0000000
+--- a/contrib/wokd.service.fedora
++++ /dev/null
+@@ -1,12 +0,0 @@
+-[Unit]
+-Description=Wok - Webserver Originated from Kimchi
+-
+-[Service]
+-Type=simple
+-ExecStart=/usr/bin/wokd
+-ExecStop=/bin/kill -TERM $MAINPID
+-EnvironmentFile=/etc/wok/wok.conf
+-KillMode=process
+-
+-[Install]
+-WantedBy=multi-user.target
+diff --git a/contrib/wokd.service.systemd b/contrib/wokd.service.systemd
+new file mode 100644
+index 0000000..d21c845
+--- /dev/null
++++ b/contrib/wokd.service.systemd
+@@ -0,0 +1,14 @@
++[Unit]
++Description=Wok - Webserver Originated from Kimchi
++Wants=nginx.service
++After=nginx.service
++
++[Service]
++Type=simple
++ExecStart=/usr/bin/wokd
++ExecStop=/bin/kill -TERM $MAINPID
++EnvironmentFile=/etc/wok/wok.conf
++KillMode=process
++
++[Install]
++WantedBy=multi-user.target
+-- 
+2.7.4
+

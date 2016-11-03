@@ -1,0 +1,29 @@
+From 6ea453b195a9da199eadbe4770a7a5c58ce31587 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Tue, 27 Dec 2016 11:24:43 -0200
+Subject: [PATCH 9/9] Revert "Remove server_root reference from stable branch"
+
+This reverts commit 8da96477e67493c8004ffb4b83fcceff9359d5ab.
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ src/wok/config.py.in | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/wok/config.py.in b/src/wok/config.py.in
+index a0c47be..dcc05c7 100644
+--- a/src/wok/config.py.in
++++ b/src/wok/config.py.in
+@@ -290,7 +290,8 @@ config = _get_config()
+ 
+ 
+ def get_base_plugin_uri(p_name):
+-    return os.path.join("/plugins", p_name)
++    return os.path.join("/", config.get("server", "server_root"),
++                        "plugins", p_name)
+ 
+ 
+ if __name__ == '__main__':
+-- 
+2.7.4
+

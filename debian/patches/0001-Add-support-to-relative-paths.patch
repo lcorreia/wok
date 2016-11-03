@@ -1,0 +1,169 @@
+From 9c3e3757bee233185e8f3e67aeb918e8ee17e71d Mon Sep 17 00:00:00 2001
+From: Paulo Vital <pvital@linux.vnet.ibm.com>
+Date: Mon, 10 Oct 2016 10:48:34 -0300
+Subject: [PATCH 1/9] Add support to relative paths.
+
+This patch adds support to handle the use of relative paths in configuration and
+command line, as well, set the backend to use the new path in URL's.
+
+This is part of solution to:
+https://github.com/kimchi-project/kimchi/issues/733
+and
+https://github.com/kimchi-project/wok/issues/25
+
+Signed-off-by: Paulo Vital <pvital@linux.vnet.ibm.com>
+---
+ src/nginx/wok.conf.in   | 6 +++---
+ src/wok.conf.in         | 5 +++++
+ src/wok/config.py.in    | 1 +
+ src/wok/model/config.py | 1 +
+ src/wok/proxy.py        | 8 +++++---
+ src/wok/reqlogger.py    | 2 +-
+ src/wok/server.py       | 2 +-
+ src/wokd.in             | 3 +++
+ 8 files changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/src/nginx/wok.conf.in b/src/nginx/wok.conf.in
+index 512b00b..5d2bb17 100644
+--- a/src/nginx/wok.conf.in
++++ b/src/nginx/wok.conf.in
+@@ -56,15 +56,15 @@ server {
+     add_header X-Content-Type-Options nosniff;
+     add_header X-XSS-Protection "1; mode=block";
+ 
+-    location / {
++    location ${server_root}/ {
+         proxy_pass http://127.0.0.1:${cherrypy_port};
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+-        proxy_redirect http://127.0.0.1:${cherrypy_port}/ https://$host:${proxy_ssl_port}/;
++        proxy_redirect http://127.0.0.1:${cherrypy_port}/ https://$host:${proxy_ssl_port}${server_root}/;
+     }
+ 
+-    location /websockify {
++    location ${server_root}/websockify {
+         proxy_pass http://websocket;
+         proxy_http_version 1.1;
+         proxy_set_header Upgrade $http_upgrade;
+diff --git a/src/wok.conf.in b/src/wok.conf.in
+index 82afc78..254f786 100644
+--- a/src/wok.conf.in
++++ b/src/wok.conf.in
+@@ -43,6 +43,11 @@
+ # Max request body size in KB, default value is 4GB
+ #max_body_size = 4 * 1024 * 1024
+ 
++# Wok server root. Set the following variable to configure any relative path to
++# the server. For example, to have Wok pointing to https://localhost:8001/wok/
++# uncomment the following:
++#server_root=/wok
++
+ [logging]
+ # Log directory
+ 
+diff --git a/src/wok/config.py.in b/src/wok/config.py.in
+index f742145..ce2cd98 100644
+--- a/src/wok/config.py.in
++++ b/src/wok/config.py.in
+@@ -272,6 +272,7 @@ def _get_config():
+     config.set("server", "ssl_key", "")
+     config.set("server", "environment", "production")
+     config.set('server', 'max_body_size', '4*1024*1024')
++    config.set("server", "server_root", "")
+     config.add_section("authentication")
+     config.set("authentication", "method", "pam")
+     config.set("authentication", "ldap_server", "")
+diff --git a/src/wok/model/config.py b/src/wok/model/config.py
+index 415098a..3748a6e 100644
+--- a/src/wok/model/config.py
++++ b/src/wok/model/config.py
+@@ -28,4 +28,5 @@ class ConfigModel(object):
+         return {'ssl_port': config.get('server', 'ssl_port'),
+                 'websockets_port': config.get('server', 'websockets_port'),
+                 'auth': config.get('authentication', 'method'),
++                'server_root': config.get('server', 'server_root'),
+                 'version': get_version()}
+diff --git a/src/wok/proxy.py b/src/wok/proxy.py
+index 4b06fc2..5f646e4 100644
+--- a/src/wok/proxy.py
++++ b/src/wok/proxy.py
+@@ -37,7 +37,7 @@ from wok.utils import run_command
+ HTTP_CONFIG = """
+ server {
+     listen %(host_addr)s:%(proxy_port)s;
+-    rewrite ^/(.*)$ https://$host:%(proxy_ssl_port)s/$1 redirect;
++    rewrite ^/(.*)$ https://$host:%(proxy_ssl_port)s%(rel_path)s/$1 redirect;
+ }
+ """
+ 
+@@ -88,7 +88,8 @@ def _create_proxy_config(options):
+     if options.https_only == 'false':
+         http_config = HTTP_CONFIG % {'host_addr': options.host,
+                                      'proxy_port': options.port,
+-                                     'proxy_ssl_port': options.ssl_port}
++                                     'proxy_ssl_port': options.ssl_port,
++                                     'rel_path': options.server_root}
+ 
+     # Read template file and create a new config file
+     # with the specified parameters.
+@@ -104,7 +105,8 @@ def _create_proxy_config(options):
+                                 cert_pem=cert, cert_key=key,
+                                 max_body_size=eval(options.max_body_size),
+                                 session_timeout=options.session_timeout,
+-                                dhparams_pem=dhparams_pem)
++                                dhparams_pem=dhparams_pem,
++                                server_root=options.server_root)
+ 
+     # Write file to be used for nginx.
+     config_file = open(os.path.join(nginx_config_dir, "wok.conf"), "w")
+diff --git a/src/wok/reqlogger.py b/src/wok/reqlogger.py
+index 49c9589..92e155d 100644
+--- a/src/wok/reqlogger.py
++++ b/src/wok/reqlogger.py
+@@ -40,7 +40,7 @@ from wok.utils import remove_old_files
+ 
+ # Log search setup
+ FILTER_FIELDS = ['app', 'date', 'ip', 'req', 'status', 'user', 'time']
+-LOG_DOWNLOAD_URI = "/data/logs/%s"
++LOG_DOWNLOAD_URI = "data/logs/%s"
+ LOG_DOWNLOAD_TIMEOUT = 6
+ LOG_FORMAT = "[%(date)s %(time)s %(zone)s] %(req)-6s %(status)s %(app)-11s " \
+              "%(ip)-15s %(user)s: %(message)s\n"
+diff --git a/src/wok/server.py b/src/wok/server.py
+index 9f7fca9..3aa06da 100644
+--- a/src/wok/server.py
++++ b/src/wok/server.py
+@@ -151,7 +151,7 @@ class Server(object):
+                 cfg[ident] = {'tools.wokauth.on': True}
+ 
+         self.app = cherrypy.tree.mount(WokRoot(model_instance, dev_env),
+-                                       config=self.configObj)
++                                       options.server_root, self.configObj)
+ 
+         self._load_plugins(options)
+         cherrypy.lib.sessions.init()
+diff --git a/src/wokd.in b/src/wokd.in
+index 962581d..c1b302c 100644
+--- a/src/wokd.in
++++ b/src/wokd.in
+@@ -51,6 +51,7 @@ def main(options):
+     websockets_port = config.config.get("server", "websockets_port")
+     session_timeout = config.config.get("server", "session_timeout")
+     runningEnv = config.config.get("server", "environment")
++    server_root = config.config.get("server", "server_root")
+     logDir = config.config.get("logging", "log_dir")
+     logLevel = config.config.get("logging", "log_level")
+ 
+@@ -85,6 +86,8 @@ def main(options):
+                       help="Running environment of wok server")
+     parser.add_option('--test', action='store_true',
+                       help="Run server in mock model")
++    parser.add_option('--server_root', type="string", default=server_root,
++                      help="Relative path to server")
+     (options, args) = parser.parse_args()
+ 
+     # Update config.config with the command line values
+-- 
+2.7.4
+

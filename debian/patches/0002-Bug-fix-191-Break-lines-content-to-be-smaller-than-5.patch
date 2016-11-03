@@ -1,0 +1,33 @@
+From f6e408ba62711237b64bc4721460dbf5cc61265d Mon Sep 17 00:00:00 2001
+From: Aline Manera <alinefm@linux.vnet.ibm.com>
+Date: Mon, 12 Dec 2016 13:26:34 -0200
+Subject: [PATCH 2/2] Bug fix #191: Break lines content to be smaller than 512
+ characters
+
+Signed-off-by: Aline Manera <alinefm@linux.vnet.ibm.com>
+---
+ ui/js/wok.bootgrid.js | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/ui/js/wok.bootgrid.js b/ui/js/wok.bootgrid.js
+index ec3afd6..1a5a374 100644
+--- a/ui/js/wok.bootgrid.js
++++ b/ui/js/wok.bootgrid.js
+@@ -50,7 +50,13 @@ wok.createBootgrid = function(opts) {
+ 
+   for (var i = 0; i < fields.length; i++) {
+     var columnHtml = [
+-      '<th data-type="', fields[i]["type"], '" data-column-id="', fields[i]["column-id"], '"', (fields[i].identifier) ? 'data-identifier="true"' : '', ("header-class" in fields[i]) ? 'data-header-css-class="gridHeader ' + fields[i]["header-class"] + '"' : 'gridHeader', ("data-class" in fields[i]) ? ' data-align="' + fields[i]["data-class"] + '"' + ' headerAlign="center"' : ' data-align="left" headerAlign="center"', ("formatter" in fields[i]) ? 'data-formatter=' + fields[i]["formatter"] : '', (fields[i].width) ? (' data-width="' + fields[i].width + '"') : '', ("converter" in fields[i]) ? ' data-converter=' + fields[i]["converter"] : '',
++      '<th data-type="', fields[i]["type"], '" data-column-id="', fields[i]["column-id"],
++      '"', (fields[i].identifier) ? 'data-identifier="true"' : '',
++      ("header-class" in fields[i]) ? 'data-header-css-class="gridHeader ' + fields[i]["header-class"] + '"' : 'gridHeader',
++      ("data-class" in fields[i]) ? ' data-align="' + fields[i]["data-class"] + '"' + ' headerAlign="center"' : ' data-align="left" headerAlign="center"',
++      ("formatter" in fields[i]) ? 'data-formatter=' + fields[i]["formatter"] : '',
++      (fields[i].width) ? (' data-width="' + fields[i].width + '"') : '',
++      ("converter" in fields[i]) ? ' data-converter=' + fields[i]["converter"] : '',
+       '>', ("title" in fields[i]) ? fields[i]["title"] : fields[i]["column-id"],
+       '</th>'
+     ].join('');
+-- 
+2.7.4
+

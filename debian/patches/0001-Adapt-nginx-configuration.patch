@@ -1,0 +1,64 @@
+From bd03e59ca2dce8be780bdbfb09128ab052296db4 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Thu, 10 Nov 2016 15:31:25 -0200
+Subject: [PATCH] Adapt nginx configuration
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ Makefile.am           | 6 +++---
+ src/nginx/Makefile.am | 2 +-
+ src/wok/config.py.in  | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 539c6a2..6f4804e 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -155,8 +155,8 @@ install-data-local:
+ 	$(INSTALL_DATA) src/dhparams.pem $(DESTDIR)/etc/wok/dhparams.pem
+ 	mkdir -p $(DESTDIR)/etc/logrotate.d/
+ 	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wokd
+-	mkdir -p $(DESTDIR)/etc/nginx/conf.d
+-	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/conf.d/wok.conf
++	mkdir -p $(DESTDIR)/etc/nginx/sites-available
++	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/sites-available/wok.conf
+ 
+ uninstall-local:
+ 	@if test -f $(systemdsystemunitdir)/wokd.service; then \
+@@ -171,7 +171,7 @@ uninstall-local:
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/lib/wok
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/log/wok
+ 	$(RM) -rf $(DESTDIR)/etc/wok
+-	$(RM) $(DESTDIR)/etc/nginx/conf.d/wok.conf
++	$(RM) $(DESTDIR)/etc/nginx/sites-available/wok.conf
+ 	$(RM) $(DESTDIR)/etc/logrotate.d/wokd
+ 
+ VERSION:
+diff --git a/src/nginx/Makefile.am b/src/nginx/Makefile.am
+index 3a47a5f..52348f3 100644
+--- a/src/nginx/Makefile.am
++++ b/src/nginx/Makefile.am
+@@ -21,6 +21,6 @@
+ 
+ EXTRA_DIST = wok.conf
+ 
+-confdir = $(sysconfdir)/nginx/conf.d
++confdir = $(sysconfdir)/nginx/sites-available
+ dist_conf_DATA = wok.conf
+ 
+diff --git a/src/wok/config.py.in b/src/wok/config.py.in
+index dcc05c7..9ba7a5a 100644
+--- a/src/wok/config.py.in
++++ b/src/wok/config.py.in
+@@ -77,7 +77,7 @@ class Paths(object):
+         self.installed = (self.prefix == '@pkgdatadir@')
+         self.ui_dir = self.add_prefix('ui')
+         self.sys_conf_dir = '@sysconfdir@/wok'
+-        self.sys_nginx_conf_dir = '@sysconfdir@/nginx/conf.d'
++        self.sys_nginx_conf_dir = '@sysconfdir@/nginx/sites-available/'
+ 
+         if self.installed:
+             self.conf_dir = self.sys_conf_dir
+-- 
+2.7.4
+

@@ -1,0 +1,107 @@
+From 8c6e27379ed2f6fe49caf05eab4922058aea4339 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Wed, 23 Nov 2016 18:38:59 -0200
+Subject: [PATCH] Fix fonts path to be relative
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ ui/css/opensans/opensans.css | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/ui/css/opensans/opensans.css b/ui/css/opensans/opensans.css
+index 57a6533..075d4a8 100644
+--- a/ui/css/opensans/opensans.css
++++ b/ui/css/opensans/opensans.css
+@@ -22,7 +22,7 @@
+ /* BEGIN Light */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-Light.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-Light.ttf") format("truetype");
+   font-weight: 300;
+   font-style: normal; }
+ /* END Light */
+@@ -30,7 +30,7 @@
+ /* BEGIN Light Italic */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-LightItalic.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-LightItalic.ttf") format("truetype");
+   font-weight: 300;
+   font-style: italic; }
+ /* END Light Italic */
+@@ -38,7 +38,7 @@
+ /* BEGIN Regular */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-Regular.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-Regular.ttf") format("truetype");
+   font-weight: normal;
+   font-style: normal; }
+ /* END Regular */
+@@ -46,7 +46,7 @@
+ /* BEGIN Italic */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-Italic.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-Italic.ttf") format("truetype");
+   font-weight: normal;
+   font-style: italic; }
+ /* END Italic */
+@@ -54,7 +54,7 @@
+ /* BEGIN Semibold */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-Semibold.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-Semibold.ttf") format("truetype");
+   font-weight: 600;
+   font-style: normal; }
+ /* END Semibold */
+@@ -62,7 +62,7 @@
+ /* BEGIN Semibold Italic */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-SemiboldItalic.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-SemiboldItalic.ttf") format("truetype");
+   font-weight: 600;
+   font-style: italic; }
+ /* END Semibold Italic */
+@@ -70,7 +70,7 @@
+ /* BEGIN Bold */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-Bold.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-Bold.ttf") format("truetype");
+   font-weight: bold;
+   font-style: normal; }
+ /* END Bold */
+@@ -78,7 +78,7 @@
+ /* BEGIN Bold Italic */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-BoldItalic.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-BoldItalic.ttf") format("truetype");
+   font-weight: bold;
+   font-style: italic; }
+ /* END Bold Italic */
+@@ -86,7 +86,7 @@
+ /* BEGIN Extrabold */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-ExtraBold.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-ExtraBold.ttf") format("truetype");
+   font-weight: 800;
+   font-style: normal; }
+ /* END Extrabold */
+@@ -94,7 +94,7 @@
+ /* BEGIN Extrabold Italic */
+ @font-face {
+   font-family: 'Open Sans';
+-  src: local('Open Sans'), local('OpenSans'), url("/fonts/OpenSans-ExtraBoldItalic.ttf") format("truetype");
++  src: local('Open Sans'), local('OpenSans'), url("../../fonts/OpenSans-ExtraBoldItalic.ttf") format("truetype");
+   font-weight: 800;
+   font-style: italic; }
+ /* END Extrabold Italic */
+-- 
+2.7.4
+

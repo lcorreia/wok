@@ -28,8 +28,6 @@ override_dh_auto_install:
 	dh_auto_install
 	#rm -Rf $(CURDIR)/debian/tmp/etc/nginx
 	mkdir -p $(CURDIR)/debian/tmp/etc/nginx/sites-available
-	cp $(CURDIR)/debian/wok.sub.nginx $(CURDIR)/debian/tmp/etc/nginx/sites-available/wok
-	mv $(CURDIR)/debian/tmp/lib/systemd/system/wokd.service $(CURDIR)/debian/tmp/lib/systemd/system/wok.service
 	rm -f $(CURDIR)/debian/tmp/usr/share/wok/doc/wokd.8
 	rm -f $(CURDIR)/debian/tmp/var/log/wok/*.log
 	# for wok-dev

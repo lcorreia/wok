@@ -1,0 +1,63 @@
+From b265a98f77047f0a32ee0ec89813b31e7d3afb94 Mon Sep 17 00:00:00 2001
+From: Paulo Vital <pvital@linux.vnet.ibm.com>
+Date: Mon, 10 Oct 2016 10:48:35 -0300
+Subject: [PATCH 2/9] Fix UI to handle relative paths.
+
+Updated necessary SCSS, JS and HTML files to handle the usage of
+relative paths.
+
+This is part of solution to:
+https://github.com/kimchi-project/kimchi/issues/733
+and
+https://github.com/kimchi-project/wok/issues/25
+
+Signed-off-by: Paulo Vital <pvital@linux.vnet.ibm.com>
+---
+ ui/css/src/modules/_wok-variables.scss | 6 +++---
+ ui/pages/tabs/settings.html.tmpl       | 7 ++++---
+ 2 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/ui/css/src/modules/_wok-variables.scss b/ui/css/src/modules/_wok-variables.scss
+index e72a59a..5b4b2d8 100644
+--- a/ui/css/src/modules/_wok-variables.scss
++++ b/ui/css/src/modules/_wok-variables.scss
+@@ -21,9 +21,9 @@ $bootstrap-sass-asset-helper: false !default;
+ // Variables
+ // --------------------------------------------------
+ 
+-$wok-logo:          '/images/wok-logo.png';
+-$wok-icon-path:     '/images/theme-default';
+-$icon-font-path:    '/css/fontawesome/fontawesome-webfont.ttf';
++$wok-logo:          '../images/wok-logo.png';
++$wok-icon-path:     '../images/theme-default';
++$icon-font-path:    'css/fontawesome/fontawesome-webfont.ttf';
+ $modal-flat-color:  #8cc63f;
+ $wok-color:         #d9182d;
+ 
+diff --git a/ui/pages/tabs/settings.html.tmpl b/ui/pages/tabs/settings.html.tmpl
+index 9b79462..dde05c8 100644
+--- a/ui/pages/tabs/settings.html.tmpl
++++ b/ui/pages/tabs/settings.html.tmpl
+@@ -18,15 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ -->
+ #unicode UTF-8
+ #import gettext
++#from wok.cachebust import href
+ #silent t = gettext.translation($lang.domain, $lang.localedir, languages=$lang.lang)
+ #silent _ = t.gettext
+ #silent _t = t.gettext
+ <html>
+ 
+ <head>
+-  <link rel="stylesheet" type="text/css" href="../../css/settings.css">
+-  <script type="text/javascript" src="../../js/wok.user-log.js"></script>
+-  <script type="text/javascript" src="../../js/wok.bootgrid.js"></script>
++  <link rel="stylesheet" type="text/css" href="$href('css/settings.css')">
++  <script type="text/javascript" src="$href('js/wok.user-log.js')"></script>
++  <script type="text/javascript" src="$href('js/wok.bootgrid.js')"></script>
+ </head>
+ 
+ <body>
+-- 
+2.7.4
+

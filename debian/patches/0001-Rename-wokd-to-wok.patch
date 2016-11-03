@@ -1,0 +1,54 @@
+From 84a6e2b52c5e02709e2d00c86748aa87f1e470c2 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Wed, 16 Nov 2016 15:43:40 -0200
+Subject: [PATCH] Rename wokd to wok
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ Makefile.am | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 6f4804e..42a8e6ec 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -91,7 +91,7 @@ install-deb: install
+ 	@if test -d "$(systemdsystemunitdir)" ; then \
+ 		$(MKDIR_P) $(DESTDIR)/$(systemdsystemunitdir); \
+ 		cp -R contrib/wokd.service.systemd \
+-			$(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
++			$(DESTDIR)/$(systemdsystemunitdir)/wok.service; \
+ 	else \
+ 		$(MKDIR_P) $(DESTDIR)/etc/init; \
+ 		cp -R $(top_srcdir)/contrib/wokd-upstart.conf.debian \
+@@ -137,11 +137,7 @@ ChangeLog:
+ install-data-local:
+ 	@if test -d "$(systemdsystemunitdir)" ; then \
+ 		mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
+-		$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+-	else \
+-		mkdir -p $(DESTDIR)/etc/init.d/; \
+-		$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
+-		chmod +x $(DESTDIR)/etc/init.d/wokd; \
++		$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wok.service; \
+ 	fi; \
+ 	if test -d /usr/lib/firewalld/services/; then \
+ 		mkdir -p $(DESTDIR)/usr/lib/firewalld/services/; \
+@@ -159,10 +155,10 @@ install-data-local:
+ 	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/sites-available/wok.conf
+ 
+ uninstall-local:
+-	@if test -f $(systemdsystemunitdir)/wokd.service; then \
+-		$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+-	elif test -f /etc/init.d/wokd; then \
+-		$(RM) $(DESTDIR)/etc/init.d/wokd; \
++	@if test -f $(systemdsystemunitdir)/wok.service; then \
++		$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wok.service; \
++	elif test -f /etc/init.d/wok; then \
++		$(RM) $(DESTDIR)/etc/init.d/wok; \
+ 		$(RM) $(DESTDIR)/etc/init/wok.conf; \
+ 	fi; \
+ 	if test -d /usr/lib/firewalld/services/; then \
+-- 
+2.7.4
+

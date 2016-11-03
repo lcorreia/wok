@@ -1,0 +1,503 @@
+From 3de062309e3e109bf79d1453556cc53a25f9bd42 Mon Sep 17 00:00:00 2001
+From: Aline Manera <alinefm@linux.vnet.ibm.com>
+Date: Wed, 9 Nov 2016 23:29:21 -0200
+Subject: [PATCH 7/9] Bug fix #175: Do not generate nginx configuration file on
+ the fly
+
+Signed-off-by: Aline Manera <alinefm@linux.vnet.ibm.com>
+Signed-off-by: Ramon Medeiros <ramonn@linux.vnet.ibm.com>
+---
+ .gitignore                 |   1 -
+ IBM-license-blacklist      |   1 +
+ Makefile.am                |   3 +-
+ contrib/wok.spec.fedora.in |   1 -
+ contrib/wok.spec.suse.in   |   1 -
+ src/nginx/Makefile.am      |   7 +--
+ src/nginx/wok.conf         |  82 +++++++++++++++++++++++++
+ src/nginx/wok.conf.in      |  75 -----------------------
+ src/wok/config.py.in       |   3 +-
+ src/wok/i18n.py            |   2 -
+ src/wok/proxy.py           | 147 +++++++++++++--------------------------------
+ src/wok/server.py          |   6 +-
+ 12 files changed, 134 insertions(+), 195 deletions(-)
+ create mode 100644 src/nginx/wok.conf
+ delete mode 100644 src/nginx/wok.conf.in
+
+diff --git a/.gitignore b/.gitignore
+index 8e2e115..60ac707 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -31,7 +31,6 @@ wok-*.tar.gz
+ wok.spec
+ src/wokd
+ src/wok.conf
+-src/nginx/wok.conf
+ src/wok/config.py
+ tests/run_tests.sh
+ tests/test_config.py
+diff --git a/IBM-license-blacklist b/IBM-license-blacklist
+index bf3651a..1004daa 100644
+--- a/IBM-license-blacklist
++++ b/IBM-license-blacklist
+@@ -31,6 +31,7 @@ src/firewalld.xml
+ src/wok.logrotate
+ src/wok.conf.in
+ src/wok/API.json
++src/nginx/wok.conf
+ src/wok/plugins/sample/API.json
+ src/wok/plugins/sample/po/LINGUAS
+ src/wok/plugins/sample/po/POTFILES.in
+diff --git a/Makefile.am b/Makefile.am
+index 636dd1d..539c6a2 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -153,9 +153,10 @@ install-data-local:
+ 	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-error.log
+ 	mkdir -p $(DESTDIR)/etc/wok/
+ 	$(INSTALL_DATA) src/dhparams.pem $(DESTDIR)/etc/wok/dhparams.pem
+-	touch $(DESTDIR)/etc/nginx/conf.d/wok.conf
+ 	mkdir -p $(DESTDIR)/etc/logrotate.d/
+ 	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wokd
++	mkdir -p $(DESTDIR)/etc/nginx/conf.d
++	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/conf.d/wok.conf
+ 
+ uninstall-local:
+ 	@if test -f $(systemdsystemunitdir)/wokd.service; then \
+diff --git a/contrib/wok.spec.fedora.in b/contrib/wok.spec.fedora.in
+index 822c480..0119381 100644
+--- a/contrib/wok.spec.fedora.in
++++ b/contrib/wok.spec.fedora.in
+@@ -117,7 +117,6 @@ rm -rf $RPM_BUILD_ROOT
+ %{_prefix}/share/locale/*/LC_MESSAGES/wok.mo
+ %{_datadir}/wok/ui/
+ %{_datadir}/wok
+-%{_sysconfdir}/nginx/conf.d/wok.conf.in
+ %{_sysconfdir}/wok/wok.conf
+ %{_sysconfdir}/wok/
+ %{_sysconfdir}/logrotate.d/wokd
+diff --git a/contrib/wok.spec.suse.in b/contrib/wok.spec.suse.in
+index e3c0707..8bed37a 100644
+--- a/contrib/wok.spec.suse.in
++++ b/contrib/wok.spec.suse.in
+@@ -104,7 +104,6 @@ rm -rf $RPM_BUILD_ROOT
+ %{_datadir}/wok
+ %{_sysconfdir}/wok/wok.conf
+ %{_sysconfdir}/wok/
+-%{_sysconfdir}/nginx/conf.d/wok.conf.in
+ %{_sysconfdir}/nginx/conf.d/wok.conf
+ %{_sysconfdir}/logrotate.d/wokd
+ %{_var}/lib/wok/
+diff --git a/src/nginx/Makefile.am b/src/nginx/Makefile.am
+index a376a74..3a47a5f 100644
+--- a/src/nginx/Makefile.am
++++ b/src/nginx/Makefile.am
+@@ -1,7 +1,7 @@
+ #
+ # Project Wok
+ #
+-# Copyright IBM Corp, 2015
++# Copyright IBM Corp, 2015-2016
+ #
+ # Code derived from Project Kimchi
+ #
+@@ -19,9 +19,8 @@
+ # License along with this library; if not, write to the Free Software
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ 
+-EXTRA_DIST = wok.conf.in
++EXTRA_DIST = wok.conf
+ 
+ confdir = $(sysconfdir)/nginx/conf.d
+-dist_conf_DATA = wok.conf.in
++dist_conf_DATA = wok.conf
+ 
+-CLEANFILES = wok.conf
+diff --git a/src/nginx/wok.conf b/src/nginx/wok.conf
+new file mode 100644
+index 0000000..7fadf38
+--- /dev/null
++++ b/src/nginx/wok.conf
+@@ -0,0 +1,82 @@
++#
++# This is the default nginx configuration for wokd service.
++# If you need to change it for any reason, please, validate /etc/wok/wok.conf
++#
++
++client_max_body_size 4194304k;
++
++# Set timeout, based on configuration values, to avoid the 504 Gateway Timeout
++# when Wok is processing a request.
++#
++# Session timeout value must be properly set in /etc/wok/wok.conf as well
++proxy_connect_timeout       10m;
++proxy_send_timeout          10m;
++proxy_read_timeout          10m;
++send_timeout                10m;
++
++map $http_upgrade $connection_upgrade {
++    default upgrade;
++    '' close;
++}
++
++# To use a different port to websockets connections, change the configuration
++# below and DO NOT forget to update /etc/wok/wok.conf accordingly
++upstream websocket {
++    server 127.0.0.1:64667;
++}
++
++server {
++    # Default HTTPS port is 8001
++    #
++    # DO NOT forget to update proxy_port parameter in /etc/wok/wok.conf when
++    # changing this value
++    listen 0.0.0.0:8001 ssl;
++
++    ssl_certificate /etc/wok/wok-cert.pem;
++    ssl_certificate_key /etc/wok/wok-key.pem;
++    ssl_protocols TLSv1.1 TLSv1.2;
++    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:@STRENGTH';
++    ssl_prefer_server_ciphers on;
++    ssl_dhparam /etc/wok/dhparams.pem;
++
++    # Session timeout value must be properly set in /etc/wok/wok.conf as well
++    ssl_session_timeout 10m;
++
++    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
++    add_header X-Frame-Options DENY;
++    add_header X-Content-Type-Options nosniff;
++    add_header X-XSS-Protection "1; mode=block";
++
++    # Update location path for relative path
++    # e.g.: localtion /wok
++    location / {
++        # Default cherrypy port for Wok is 8010
++        # DO NOT forget to update cherrypy_port parameter in /etc/wok/wok.conf
++        # when changing this value
++        proxy_pass http://127.0.0.1:8010;
++        proxy_set_header Host $host;
++        proxy_set_header X-Real-IP $remote_addr;
++        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
++        # Update location path for https for relative path
++        # e.g.: proxy_redirect http://127.0.0.1:8010/ https://$host:8001/wok/;
++        proxy_redirect http://127.0.0.1:8010/ https://$host:8001/;
++    }
++
++    # Update location path for relative path
++    # e.g.: localtion /wok/websockify
++    location /websockify {
++        proxy_pass http://websocket;
++        proxy_http_version 1.1;
++        proxy_set_header Upgrade $http_upgrade;
++        proxy_set_header Connection $connection_upgrade;
++    }
++}
++
++# Default HTTP port is 8000
++#
++# Every HTTP request will be forwarded to HTTPS by default
++# Remove the block below to disable HTTP connections
++server {
++    listen 0.0.0.0:8000;
++    rewrite ^/(.*)$ https://$host:8001/$1 redirect;
++}
+diff --git a/src/nginx/wok.conf.in b/src/nginx/wok.conf.in
+deleted file mode 100644
+index 5d2bb17..0000000
+--- a/src/nginx/wok.conf.in
++++ /dev/null
+@@ -1,75 +0,0 @@
+-# Project Wok
+-#
+-# Copyright IBM Corp, 2015-2016
+-#
+-# Code derived from Project Kimchi
+-#
+-# This library is free software; you can redistribute it and/or
+-# modify it under the terms of the GNU Lesser General Public
+-# License as published by the Free Software Foundation; either
+-# version 2.1 of the License, or (at your option) any later version.
+-#
+-# This library is distributed in the hope that it will be useful,
+-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-# Lesser General Public License for more details.
+-#
+-# You should have received a copy of the GNU Lesser General Public
+-# License along with this library; if not, write to the Free Software
+-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+-# 02110-1301  USA
+-
+-# This is a template file to be used to generate a nginx
+-# proxy config file at wokd script.
+-
+-client_max_body_size ${max_body_size}k;
+-
+-# Set timeout, based on configuration values, to avoid the 504 Gateway Timeout
+-# when Wok is processing a request.
+-proxy_connect_timeout       ${session_timeout}m;
+-proxy_send_timeout          ${session_timeout}m;
+-proxy_read_timeout          ${session_timeout}m;
+-send_timeout                ${session_timeout}m;
+-
+-map $http_upgrade $connection_upgrade {
+-    default upgrade;
+-    '' close;
+-}
+-
+-upstream websocket {
+-    server 127.0.0.1:${websockets_port};
+-}
+-
+-server {
+-    listen ${host_addr}:${proxy_ssl_port} ssl;
+-
+-    ssl_certificate ${cert_pem};
+-    ssl_certificate_key ${cert_key};
+-    ssl_protocols TLSv1.1 TLSv1.2;
+-    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:@STRENGTH';
+-    ssl_prefer_server_ciphers on;
+-    ssl_dhparam ${dhparams_pem};
+-    ssl_session_timeout ${session_timeout}m;
+-
+-    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+-    add_header X-Frame-Options DENY;
+-    add_header X-Content-Type-Options nosniff;
+-    add_header X-XSS-Protection "1; mode=block";
+-
+-    location ${server_root}/ {
+-        proxy_pass http://127.0.0.1:${cherrypy_port};
+-        proxy_set_header Host $host;
+-        proxy_set_header X-Real-IP $remote_addr;
+-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+-        proxy_redirect http://127.0.0.1:${cherrypy_port}/ https://$host:${proxy_ssl_port}${server_root}/;
+-    }
+-
+-    location ${server_root}/websockify {
+-        proxy_pass http://websocket;
+-        proxy_http_version 1.1;
+-        proxy_set_header Upgrade $http_upgrade;
+-        proxy_set_header Connection $connection_upgrade;
+-    }
+-}
+-
+-${http_config}
+diff --git a/src/wok/config.py.in b/src/wok/config.py.in
+index ce2cd98..7c6acf5 100644
+--- a/src/wok/config.py.in
++++ b/src/wok/config.py.in
+@@ -76,13 +76,14 @@ class Paths(object):
+         self.prefix = self.get_prefix()
+         self.installed = (self.prefix == '@pkgdatadir@')
+         self.ui_dir = self.add_prefix('ui')
++        self.sys_conf_dir = '@sysconfdir@/wok'
+         self.sys_nginx_conf_dir = '@sysconfdir@/nginx/conf.d'
+ 
+         if self.installed:
++            self.conf_dir = self.sys_conf_dir
+             self.nginx_conf_dir = self.sys_nginx_conf_dir
+             self.state_dir = '@localstatedir@/lib/wok'
+             self.log_dir = '@localstatedir@/log/wok'
+-            self.conf_dir = '@sysconfdir@/wok'
+             self.src_dir = '@wokdir@'
+             self.plugins_dir = '@wokdir@/plugins'
+             self.mo_dir = '@prefix@/share/locale'
+diff --git a/src/wok/i18n.py b/src/wok/i18n.py
+index ab7ef0e..cbc37cf 100644
+--- a/src/wok/i18n.py
++++ b/src/wok/i18n.py
+@@ -55,8 +55,6 @@ messages = {
+     "WOKUTILS0004E": _("Invalid data value '%(value)s'"),
+     "WOKUTILS0005E": _("Invalid data unit '%(unit)s'"),
+ 
+-    "WOKPROXY0001E": _("Unable to (re)start system's nginx.service. Details: '%(error)s'"),
+-
+     # These messages (ending with L) are for user log purposes
+     "WOKASYNC0001L": _("Successfully completed task '%(target_uri)s'"),
+     "WOKASYNC0002L": _("Failed to complete task '%(target_uri)s'"),
+diff --git a/src/wok/proxy.py b/src/wok/proxy.py
+index 5f646e4..8ebb869 100644
+--- a/src/wok/proxy.py
++++ b/src/wok/proxy.py
+@@ -25,114 +25,49 @@
+ # and configure the Nginx proxy.
+ 
+ import os
+-import pwd
+-from string import Template
+ 
+ from wok import sslcert
+ from wok.config import paths
+-from wok.exception import OperationFailed
+-from wok.utils import run_command
+ 
+ 
+-HTTP_CONFIG = """
+-server {
+-    listen %(host_addr)s:%(proxy_port)s;
+-    rewrite ^/(.*)$ https://$host:%(proxy_ssl_port)s%(rel_path)s/$1 redirect;
+-}
+-"""
+-
+-
+-def _create_proxy_config(options):
+-    """Create nginx configuration file based on current ports config
+-
+-    To allow flexibility in which port wok runs, we need the same
+-    flexibility with the nginx proxy. This method creates the config
+-    file dynamically by using 'nginx.conf.in' as a template, creating
+-    the file 'wok.conf' which will be used to launch the proxy.
+-
+-    Arguments:
+-    options - OptionParser object with Wok config options
+-    """
+-    # User that will run the worker process of the proxy. Fedora,
+-    # RHEL and Suse creates an user called 'nginx' when installing
+-    # the proxy. Ubuntu creates an user 'www-data' for it.
+-    user_proxy = None
+-    user_list = ('nginx', 'www-data', 'http')
+-    sys_users = [p.pw_name for p in pwd.getpwall()]
+-    common_users = list(set(user_list) & set(sys_users))
+-    if len(common_users) == 0:
+-        raise Exception("No common user found")
+-    else:
+-        user_proxy = common_users[0]
+-    config_dir = paths.conf_dir
+-    nginx_config_dir = paths.nginx_conf_dir
+-    cert = options.ssl_cert
+-    key = options.ssl_key
+-
+-    # No certificates specified by the user
+-    if not cert or not key:
+-        cert = '%s/wok-cert.pem' % config_dir
+-        key = '%s/wok-key.pem' % config_dir
+-        # create cert files if they don't exist
+-        if not os.path.exists(cert) or not os.path.exists(key):
+-            ssl_gen = sslcert.SSLCert()
+-            with open(cert, "w") as f:
+-                f.write(ssl_gen.cert_pem())
+-            with open(key, "w") as f:
+-                f.write(ssl_gen.key_pem())
+-
+-    # Setting up Diffie-Hellman group with 2048-bit file
+-    dhparams_pem = os.path.join(config_dir, "dhparams.pem")
+-
+-    http_config = ''
+-    if options.https_only == 'false':
+-        http_config = HTTP_CONFIG % {'host_addr': options.host,
+-                                     'proxy_port': options.port,
+-                                     'proxy_ssl_port': options.ssl_port,
+-                                     'rel_path': options.server_root}
+-
+-    # Read template file and create a new config file
+-    # with the specified parameters.
+-    with open(os.path.join(nginx_config_dir, "wok.conf.in")) as template:
+-        data = template.read()
+-    data = Template(data)
+-    data = data.safe_substitute(user=user_proxy,
+-                                host_addr=options.host,
+-                                proxy_ssl_port=options.ssl_port,
+-                                http_config=http_config,
+-                                cherrypy_port=options.cherrypy_port,
+-                                websockets_port=options.websockets_port,
+-                                cert_pem=cert, cert_key=key,
+-                                max_body_size=eval(options.max_body_size),
+-                                session_timeout=options.session_timeout,
+-                                dhparams_pem=dhparams_pem,
+-                                server_root=options.server_root)
+-
+-    # Write file to be used for nginx.
+-    config_file = open(os.path.join(nginx_config_dir, "wok.conf"), "w")
+-    config_file.write(data)
+-    config_file.close()
+-
+-    # If not running from the installed path (from a cloned and builded source
+-    # code), create a symbolic link in  system's dir to prevent errors on read
+-    # SSL certifications.
+-    if not paths.installed:
+-        dst = os.path.join(paths.sys_nginx_conf_dir, "wok.conf")
+-
+-        # directoy does not exist: create it
+-        if not os.path.exists(paths.sys_nginx_conf_dir):
+-            os.makedirs(paths.sys_nginx_conf_dir)
+-
+-        if os.path.isfile(dst) or os.path.islink(dst):
+-            os.remove(dst)
+-        os.symlink(os.path.join(nginx_config_dir, "wok.conf"), dst)
+-
+-
+-def start_proxy(options):
+-    """Start nginx reverse proxy."""
+-    _create_proxy_config(options)
+-    # Restart system's nginx service to reload wok configuration
+-    cmd = ['systemctl', 'restart', 'nginx.service']
+-    output, error, retcode = run_command(cmd, silent=True)
+-    if retcode != 0:
+-        raise OperationFailed('WOKPROXY0001E', {'error': error})
++def check_proxy_config():
++    # When running from a installed system, there is nothing to do
++    if paths.installed:
++        return
++
++    # Otherwise, ensure essential directories and files are placed on right
++    # place to avoid problems
++    #
++    # If not running from a installed system, nginx and wok conf
++    # directories may not exist, so create them if needed
++    dirs = [paths.sys_nginx_conf_dir, paths.sys_conf_dir]
++    for d in dirs:
++        if not os.path.exists(d):
++            os.makedirs(d)
++
++    # Create a symbolic link in system's dir to prevent errors while
++    # running from source code
++    symlinks = [{'target': os.path.join(paths.nginx_conf_dir, 'wok.conf'),
++                 'link': os.path.join(paths.sys_nginx_conf_dir,
++                                      'wok.conf')},
++                {'target': os.path.join(paths.conf_dir, 'dhparams.pem'),
++                 'link': os.path.join(paths.sys_conf_dir, 'dhparams.pem')}]
++    for item in symlinks:
++        link = item['link']
++        if os.path.isfile(link) or os.path.islink(link):
++            os.remove(link)
++        os.symlink(item['target'], link)
++
++    # Create cert files if they don't exist
++    cert = os.path.join(paths.sys_conf_dir, 'wok-cert.pem')
++    key = os.path.join(paths.sys_conf_dir, 'wok-key.pem')
++
++    if not os.path.exists(cert) or not os.path.exists(key):
++        ssl_gen = sslcert.SSLCert()
++        with open(cert, "w") as f:
++            f.write(ssl_gen.cert_pem())
++        with open(key, "w") as f:
++            f.write(ssl_gen.key_pem())
++
++    # Reload nginx configuration.
++    os.system('nginx -s reload')
+diff --git a/src/wok/server.py b/src/wok/server.py
+index 3aa06da..48f455b 100644
+--- a/src/wok/server.py
++++ b/src/wok/server.py
+@@ -31,7 +31,7 @@ from wok.config import config as configParser
+ from wok.config import PluginConfig, WokConfig
+ from wok.control import sub_nodes
+ from wok.model import model
+-from wok.proxy import start_proxy
++from wok.proxy import check_proxy_config
+ from wok.reqlogger import RequestLogger
+ from wok.root import WokRoot
+ from wok.safewatchedfilehandler import SafeWatchedFileHandler
+@@ -61,8 +61,8 @@ def set_no_cache():
+ 
+ class Server(object):
+     def __init__(self, options):
+-        # Launch reverse proxy
+-        start_proxy(options)
++        # Check proxy configuration
++        check_proxy_config()
+ 
+         make_dirs = [
+             os.path.abspath(config.get_log_download_path()),
+-- 
+2.7.4
+
