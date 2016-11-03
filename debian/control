@@ -2,11 +2,9 @@ Source: wok
 Section: misc
 Priority: optional
 Maintainer: Lucio Correia <luciojhc@linux.vnet.ibm.com>
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Build-Depends: cython, 
-               debhelper (>= 9),
-               dh-autoreconf,
-               dh-systemd,
+               debhelper (>= 10),
                dh-python,
                python,
                pkg-config,
