@@ -1,0 +1,43 @@
+#!/usr/bin/make -f
+export DH_VERBOSE=1
+
+export AUTOPOINT=true
+
+%:
+	dh $@ --with autoreconf --with python2 --with systemd
+
+override_dh_clean:
+	dh_clean po/gen-pot po/stamp-po src/wok/plugins/sample/po/stamp-po \
+	$(shell find ./ -name '*.gmo'| sed 's#[^/]*$$#*.gmo#'| sort|uniq) \
+	$(shell find ./ -name '*.mo' -type l)
+	#$(shell find ./ -name '*.pyc'| sed 's#[^/]*$$#*.pyc#'| sort|uniq) \
+	#src/wok-cert.pem src/wok-key.pem src/nginx_wok.conf
+
+override_dh_link:
+	dh_link
+	# Use Debian-packaged jquery
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/jquery-ui.min.js
+	dh_link -p wok usr/share/javascript/jquery-ui/jquery-ui.min.js usr/share/wok/ui/libs/jquery-ui/jquery-ui.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/jquery-ui-i18n.min.js
+	# The following needs to be changed after #720556 is fixed
+	dh_link -p wok usr/share/javascript/jquery-ui/ui/i18n/jquery-ui-i18n.js usr/share/wok/ui/libs/jquery-ui/jquery-ui-i18n.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery/jquery.min.js
+	dh_link -p wok usr/share/javascript/jquery/jquery.min.js usr/share/wok/ui/libs/jquery/jquery.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/themes/base/jquery-ui.min.css
+	dh_link -p wok usr/share/javascript/jquery-ui-themes/base/jquery-ui.min.css usr/share/wok/ui/libs/jquery-ui/themes/base/jquery-ui.min.css
+
+override_dh_auto_install:
+	dh_auto_install
+	#rm -Rf $(CURDIR)/debian/tmp/etc/nginx
+	mkdir -p $(CURDIR)/debian/tmp/etc/nginx/sites-available
+	cp $(CURDIR)/debian/wok.sub.nginx $(CURDIR)/debian/tmp/etc/nginx/sites-available/wok
+	mv $(CURDIR)/debian/tmp/lib/systemd/system/wokd.service $(CURDIR)/debian/tmp/lib/systemd/system/wok.service
+	rm -f $(CURDIR)/debian/tmp/usr/share/wok/doc/wokd.8
+	rm -f $(CURDIR)/debian/tmp/var/log/wok/*.log
+	# for wok-dev
+	mkdir -p $(CURDIR)/debian/tmp/usr/share/wok/scss
+	#cp $(CURDIR)/ui/css/src/modules/* $(CURDIR)/debian/tmp/usr/share/wok/scss
+	cp -fr $(CURDIR)/ui/css/src/* $(CURDIR)/debian/tmp/usr/share/wok/scss
+
+override_dh_auto_test:
+	echo "Skipping tests"

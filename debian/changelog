@@ -1,0 +1,5 @@
+wok (2.2.0-1) unstable; urgency=medium
+
+  * Initial release (Closes: #772823, LP: #1408071)
+
+ -- Frederic Bonnard <frediz@linux.vnet.ibm.com>  Fri, 02 Sep 2016 14:10:09 +0200

@@ -1,0 +1,45 @@
+Kimchi web site
+---------------
+Just go to http://your_host/kimchi/ once installed.
+
+Configuration
+-------------
+** Kimchi users:
+Users that can log in kimchi website should be member of libvirt group
+(authentication is based on kimchi pam service).
+Users need to be member of the sudo group to be able to manage guests.
+
+** Kimchi serving
+If you want to change the nginx configuration type :
+- use the corresponding configuration file : 
+    # cp /usr/share/doc/kimchi/examples/kimchi.virt.nginx
+         /etc/nginx/sites-available/kimchi
+    # vi /etc/nginx/sites-available/kimchi  # to change the hostname
+  or
+    # cp /usr/share/doc/kimchi/examples/kimchi.sub.nginx
+         /etc/nginx/sites-available/kimchi
+  Then enable the configuration :
+    # ln /etc/nginx/sites-available/kimchi /etc/nginx/sites-enabled/kimchi
+- And restart kimchi and nginx :
+    # /etc/init.d/nginx restart
+    # /etc/init.d/kimchi restart
+
+
+Possible issues
+---------------
+Error logs can be found in /var/log/kimchi/kimchi-error.log
+
+In case of trouble, make sure your installation of qemu/kvm is ok by testing
+with qemu ("qemu-system-ppc64 -nographic -enable-kvm" for instance on ppc64)
+
+Q) On ppc64 : from kimchi-error.log :
+   libvirtError: internal error: process exited while connecting to monitor:
+   Could not access KVM kernel module: Permission denied
+   failed to initialize KVM: Permission denied
+A) You need to disable smt (make sure it's done each time the host boots)
+   ppc64_cpu --smt=off
+
+Q) On ppc64, from qemu-system-ppc64 : "ioctl(KVM_CREATE_VM) failed: 22 Invalid
+   argument"
+A) you need to have modules kvm_hv and kvm_pr loaded (should be the case by
+   default)

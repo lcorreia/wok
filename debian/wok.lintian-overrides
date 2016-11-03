@@ -1,0 +1,4 @@
+wok: package-contains-broken-symlink usr/share/wok/ui/libs/themes/base/jquery-ui.min.css
+wok: source-contains-prebuilt-javascript-object ui/libs/jquery-ui.min.js
+wok: source-contains-prebuilt-javascript-object ui/libs/jquery-ui-i18n.min.js
+wok: source-contains-prebuilt-javascript-object ui/libs/jquery-1.10.0.min.

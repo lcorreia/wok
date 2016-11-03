@@ -1,0 +1,9 @@
+etc
+lib
+usr/bin
+usr/lib
+usr/share/locale
+usr/share/man
+usr/share/wok/doc
+usr/share/wok/ui
+var

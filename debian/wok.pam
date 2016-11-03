@@ -1,0 +1,9 @@
+#
+# The PAM configuration file for the wok service
+#
+# 
+
+@include common-auth
+auth     sufficient  pam_succeed_if.so uid eq 0
+auth     sufficient  pam_succeed_if.so user ingroup libvirt
+auth     requisite   pam_deny.so

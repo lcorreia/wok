@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "purge" ]; then
+  rm -Rf /etc/wok
+  rm -f /etc/nginx/sites-available/wok
+  if which invoke-rc.d >/dev/null 2>&1; then
+    invoke-rc.d nginx restart
+  else
+    /etc/init.d/nginx restart
+  fi
+fi
+
+if [ "$1" = "remove" ]; then
+  rm -f /etc/nginx/sites-enabled/wok
+  if which invoke-rc.d >/dev/null 2>&1; then
+    invoke-rc.d nginx restart
+  else
+    /etc/init.d/nginx restart
+  fi
+fi
+
+#DEBHELPER#
