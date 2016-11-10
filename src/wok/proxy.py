@@ -58,6 +58,11 @@ def check_proxy_config():
             os.remove(link)
         os.symlink(item['target'], link)
 
+    # Enable wok config
+    enabled = os.path.join(paths.sys_nginx_enable_dir, 'wok.conf')
+    if not os.path.exists(enabled):
+        os.symlink(os.path.join(paths.sys_nginx_conf_dir, 'wok.conf'), enabled)
+
     # Create cert files if they don't exist
     cert = os.path.join(paths.sys_conf_dir, 'wok-cert.pem')
     key = os.path.join(paths.sys_conf_dir, 'wok-key.pem')

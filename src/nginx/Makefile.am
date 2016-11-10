@@ -21,6 +21,6 @@
 
 EXTRA_DIST = wok.conf
 
-confdir = $(sysconfdir)/nginx/conf.d
+confdir = $(sysconfdir)/nginx/sites-available
 dist_conf_DATA = wok.conf
 

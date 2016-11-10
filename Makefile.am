@@ -155,8 +155,8 @@ install-data-local:
 	$(INSTALL_DATA) src/dhparams.pem $(DESTDIR)/etc/wok/dhparams.pem
 	mkdir -p $(DESTDIR)/etc/logrotate.d/
 	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wokd
-	mkdir -p $(DESTDIR)/etc/nginx/conf.d
-	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/conf.d/wok.conf
+	mkdir -p $(DESTDIR)/etc/nginx/sites-available
+	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/sites-available/wok.conf
 
 uninstall-local:
 	@if test -f $(systemdsystemunitdir)/wokd.service; then \
@@ -171,7 +171,7 @@ uninstall-local:
 	$(RM) -rf $(DESTDIR)/$(localstatedir)/lib/wok
 	$(RM) -rf $(DESTDIR)/$(localstatedir)/log/wok
 	$(RM) -rf $(DESTDIR)/etc/wok
-	$(RM) $(DESTDIR)/etc/nginx/conf.d/wok.conf
+	$(RM) $(DESTDIR)/etc/nginx/sites-available/wok.conf
 	$(RM) $(DESTDIR)/etc/logrotate.d/wokd
 
 VERSION:
