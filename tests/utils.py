@@ -88,7 +88,7 @@ if sys.version_info[:2] == (2, 6):
     unittest.TestCase.assertNotIn = assertNotIn
 
 
-def run_server(test_mode, model=None, environment='dev', server_root=''):
+def run_server(test_mode, model=None, environment='dev', server_root='/wok'):
 
     args = type('_', (object,),
                 {'cherrypy_port': 8010, 'max_body_size': '4*1024',

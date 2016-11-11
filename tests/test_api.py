@@ -47,7 +47,7 @@ class APITests(unittest.TestCase):
         self.request = partial(utils.request)
 
     def test_config(self):
-        resp = self.request('/config').read()
+        resp = self.request('/wok/config').read()
         conf = json.loads(resp)
         keys = ["auth", "proxy_port", "websockets_port", "version",
                 "server_root"]
@@ -61,13 +61,13 @@ class APITests(unittest.TestCase):
 
         user, pw = utils.fake_user.items()[0]
         req = json.dumps({'username': user, 'password': pw})
-        resp = self.request('/login', req, 'POST', hdrs)
+        resp = self.request('/wok/login', req, 'POST', hdrs)
 
-        resp = self.request('/logout', '{}', 'POST', hdrs)
+        resp = self.request('/wok/logout', '{}', 'POST', hdrs)
         self.assertEquals(200, resp.status)
 
         # Test user logs JSON response
-        resp = self.request('/logs?app=wok&download=True').read()
+        resp = self.request('/wok/logs?app=wok&download=True').read()
         conf = json.loads(resp)
         self.assertIn('records', conf)
         self.assertIn('uri', conf)
@@ -95,10 +95,10 @@ class APITests(unittest.TestCase):
 
         taskid = AsyncTask('', continuous_ops, {'result': True},
                            kill_function).id
-        tasks = json.loads(self.request('/tasks').read())
+        tasks = json.loads(self.request('/wok/tasks').read())
         self.assertLessEqual(1, len(tasks))
         time.sleep(10)
-        resp = self.request('/tasks/%s' % taskid, '{}', 'DELETE')
+        resp = self.request('/wok/tasks/%s' % taskid, '{}', 'DELETE')
         self.assertEquals(204, resp.status)
-        task = json.loads(self.request('/tasks/%s' % taskid).read())
+        task = json.loads(self.request('/wok/tasks/%s' % taskid).read())
         self.assertEquals('killed', task['status'])

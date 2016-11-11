@@ -63,7 +63,7 @@ class ServerTests(unittest.TestCase):
         """
         Test that we can start a server and receive HTTP:200.
         """
-        resp = self.request('/')
+        resp = self.request('/wok')
         self.assertEquals(200, resp.status)
 
     def test_multithreaded_connection(self):
@@ -121,13 +121,13 @@ class ServerTests(unittest.TestCase):
         """
         A non-existent path should return HTTP:404
         """
-        url_list = ['/doesnotexist', '/tasks/blah']
+        url_list = ['/wok/doesnotexist', '/wok/tasks/blah']
         for url in url_list:
             resp = self.request(url)
             self.assertEquals(404, resp.status)
 
         # Verify it works for DELETE too
-        resp = self.request('/tasks/blah', '', 'DELETE')
+        resp = self.request('/wok/tasks/blah', '', 'DELETE')
         self.assertEquals(404, resp.status)
 
     def test_accepts(self):
@@ -139,39 +139,39 @@ class ServerTests(unittest.TestCase):
           If both of the above (in any order), serve the rest api
           If neither of the above, HTTP:406
         """
-        resp = self.request("/", headers={})
+        resp = self.request("/wok", headers={})
         location = resp.getheader('location')
         self.assertTrue(location.endswith("login.html"))
-        resp = self.request("/login.html", headers={})
+        resp = self.request("/wok/login.html", headers={})
         self.assertTrue('<!doctype html>' in resp.read().lower())
 
-        resp = self.request("/", headers={'Accept': 'application/json'})
+        resp = self.request("/wok", headers={'Accept': 'application/json'})
         self.assertValidJSON(resp.read())
 
-        resp = self.request("/", headers={'Accept': 'text/html'})
+        resp = self.request("/wok", headers={'Accept': 'text/html'})
         location = resp.getheader('location')
         self.assertTrue(location.endswith("login.html"))
 
-        resp = self.request("/", headers={'Accept':
-                                          'application/json, text/html'})
+        resp = self.request("/wok", headers={'Accept':
+                                             'application/json, text/html'})
         self.assertValidJSON(resp.read())
 
-        resp = self.request("/", headers={'Accept':
-                                          'text/html, application/json'})
+        resp = self.request("/wok", headers={'Accept':
+                                             'text/html, application/json'})
         self.assertValidJSON(resp.read())
 
         h = {'Accept': 'text/plain'}
-        resp = self.request('/', None, 'GET', h)
+        resp = self.request('/wok', None, 'GET', h)
         self.assertEquals(406, resp.status)
 
     def test_auth_unprotected(self):
         hdrs = {'AUTHORIZATION': ''}
-        uris = ['/js/wok.min.js',
-                '/css/theme-default.min.css',
-                '/images/favicon.png',
-                '/libs/jquery/jquery.min.js',
-                '/login.html',
-                '/logout']
+        uris = ['/wok/js/wok.min.js',
+                '/wok/css/theme-default.min.css',
+                '/wok/images/favicon.png',
+                '/wok/libs/jquery/jquery.min.js',
+                '/wok/login.html',
+                '/wok/logout']
 
         for uri in uris:
             resp = self.request(uri, None, 'HEAD', hdrs)
@@ -179,7 +179,7 @@ class ServerTests(unittest.TestCase):
 
     def test_auth_protected(self):
         hdrs = {'AUTHORIZATION': ''}
-        uris = ['/tasks']
+        uris = ['/wok/tasks']
 
         for uri in uris:
             resp = self.request(uri, None, 'GET', hdrs)
@@ -188,13 +188,13 @@ class ServerTests(unittest.TestCase):
     def test_auth_bad_creds(self):
         # Test HTTPBA
         hdrs = {'AUTHORIZATION': "Basic " + base64.b64encode("nouser:badpass")}
-        resp = self.request('/tasks', None, 'GET', hdrs)
+        resp = self.request('/wok/tasks', None, 'GET', hdrs)
         self.assertEquals(401, resp.status)
 
         # Test REST API
         hdrs = {'AUTHORIZATION': ''}
         req = json.dumps({'username': 'nouser', 'password': 'badpass'})
-        resp = self.request('/login', req, 'POST', hdrs)
+        resp = self.request('/wok/login', req, 'POST', hdrs)
         self.assertEquals(401, resp.status)
 
     def test_auth_browser_no_httpba(self):
@@ -203,7 +203,7 @@ class ServerTests(unittest.TestCase):
         hdrs = {"X-Requested-With": "XMLHttpRequest"}
 
         # Try our request (Note that request() will add a valid HTTPBA header)
-        resp = self.request('/tasks', None, 'GET', hdrs)
+        resp = self.request('/wok/tasks', None, 'GET', hdrs)
         self.assertEquals(401, resp.status)
         self.assertEquals(None, resp.getheader('WWW-Authenticate'))
 
@@ -213,13 +213,13 @@ class ServerTests(unittest.TestCase):
                 'Accept': 'application/json'}
 
         # Test we are logged out
-        resp = self.request('/tasks', None, 'GET', hdrs)
+        resp = self.request('/wok/tasks', None, 'GET', hdrs)
         self.assertEquals(401, resp.status)
 
         # Execute a login call
         user, pw = utils.fake_user.items()[0]
         req = json.dumps({'username': user, 'password': pw})
-        resp = self.request('/login', req, 'POST', hdrs)
+        resp = self.request('/wok/login', req, 'POST', hdrs)
         self.assertEquals(200, resp.status)
 
         user_info = json.loads(resp.read())
@@ -233,16 +233,16 @@ class ServerTests(unittest.TestCase):
         hdrs['Cookie'] = cookie
 
         # Test we are logged in with the cookie
-        resp = self.request('/tasks', None, 'GET', hdrs)
+        resp = self.request('/wok/tasks', None, 'GET', hdrs)
         self.assertEquals(200, resp.status)
 
         # Execute a logout call
-        resp = self.request('/logout', '{}', 'POST', hdrs)
+        resp = self.request('/wok/logout', '{}', 'POST', hdrs)
         self.assertEquals(200, resp.status)
         del hdrs['Cookie']
 
         # Test we are logged out
-        resp = self.request('/tasks', None, 'GET', hdrs)
+        resp = self.request('/wok/tasks', None, 'GET', hdrs)
         self.assertEquals(401, resp.status)
 
     # TODO: uncomment and adapt when some wok API accepts parameters to test

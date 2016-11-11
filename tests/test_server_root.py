@@ -43,7 +43,7 @@ class ServerRootTests(unittest.TestCase):
         """
         Test reasons sanitized in production env
         """
-        server_root = '/test'
+        server_root = '/wok'
         setup_server('production', server_root)
 
         # check if server_root in config is the same used to start server
@@ -55,7 +55,7 @@ class ServerRootTests(unittest.TestCase):
         """
         Test traceback thrown in development env
         """
-        server_root = '/test'
+        server_root = '/wok'
         setup_server(server_root=server_root)
 
         # check if server_root in config is the same used to start server
