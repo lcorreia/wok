@@ -138,8 +138,8 @@ install-data-local:
 	mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
 	$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
 	mkdir -p $(DESTDIR)/etc/init.d/; \
-	$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
-	chmod +x $(DESTDIR)/etc/init.d/wokd; \
+	$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wok; \
+	chmod +x $(DESTDIR)/etc/init.d/wok; \
 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services/;
 	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml;
 	mkdir -p $(DESTDIR)/$(localstatedir)/lib/wok/
@@ -153,7 +153,7 @@ install-data-local:
 
 uninstall-local:
 	$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
-	$(RM) $(DESTDIR)/etc/init.d/wokd; \
+	$(RM) $(DESTDIR)/etc/init.d/wok; \
 	$(RM) $(DESTDIR)/etc/init/wok.conf; \
 	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml
 	rmdir $(DESTDIR)/usr/lib/firewalld/services && rmdir $(DESTDIR)/usr/lib/firewalld || :

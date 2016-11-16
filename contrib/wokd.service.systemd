@@ -11,4 +11,5 @@ EnvironmentFile=/etc/wok/wok.conf
 KillMode=process
 
 [Install]
+Alias=wok.service
 WantedBy=multi-user.target

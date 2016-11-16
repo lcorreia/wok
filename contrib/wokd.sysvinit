@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# wokd         Wok Web Server
+# wok         Wok Web Server
 #
 # Copyright IBM Corp, 2015-2017
 #
@@ -22,7 +22,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 ### BEGIN INIT INFO
-# Provides:          wokd
+# Provides:          wok
 # Required-Start:    $local_fs $network $remote_fs $syslog
 # Required-Stop:     $local_fs $network $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -38,7 +38,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 CONF=/etc/default/wok
 DESC="wok"
-NAME=wokd
+NAME=wok
 DAEMON=/usr/bin/wokd
 DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
