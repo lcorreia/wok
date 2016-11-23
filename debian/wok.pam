@@ -5,5 +5,5 @@
 
 @include common-auth
 auth     sufficient  pam_succeed_if.so uid eq 0
-auth     sufficient  pam_succeed_if.so user ingroup libvirt
+auth     sufficient  pam_succeed_if.so user ingroup wok
 auth     requisite   pam_deny.so
