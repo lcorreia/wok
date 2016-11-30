@@ -14,15 +14,46 @@ override_dh_clean:
 override_dh_link:
 	dh_link
 	# Use Debian-packaged jquery
-	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/jquery-ui.min.js
-	dh_link -p wok usr/share/javascript/jquery-ui/jquery-ui.min.js usr/share/wok/ui/libs/jquery-ui/jquery-ui.min.js
-	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/jquery-ui-i18n.min.js
-	# The following needs to be changed after #720556 is fixed
-	dh_link -p wok usr/share/javascript/jquery-ui/ui/i18n/jquery-ui-i18n.js usr/share/wok/ui/libs/jquery-ui/jquery-ui-i18n.min.js
+	# libjs-bootstrap: /usr/share/javascript/bootstrap/js/bootstrap.min.js
+	rm -f $(CURDIR)/debian/wok/ui/libs/bootstrap/bootstrap.min.js
+	dh_link -p wok usr/share/javascript/bootstrap/js/bootstrap.min.js usr/share/wok/ui/libs/bootstrap/bootstrap.min.js
+	# libjs-es5-shim: /usr/share/javascript/es5-shim/es5-shim.min.js
+	rm -f $(CURDIR)/debian/wok/ui/libs/es5-shim/es5-shim.min.js
+	dh_link -p wok usr/share/javascript/es5-shim/es5-shim.min.js usr/share/wok/ui/libs/es5-shim/es5-shim.min.js
+	# libjs-jquery: /usr/share/javascript/jquery/jquery.min.js
 	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery/jquery.min.js
 	dh_link -p wok usr/share/javascript/jquery/jquery.min.js usr/share/wok/ui/libs/jquery/jquery.min.js
+	# libjs-jquery-ui: /usr/share/javascript/jquery-ui/jquery-ui.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/jquery-ui.min.js
+	dh_link -p wok usr/share/javascript/jquery-ui/jquery-ui.min.js usr/share/wok/ui/libs/jquery-ui/jquery-ui.min.js
+	# libjs-jquery-ui: /usr/share/javascript/jquery-ui/ui/i18n/jquery-ui-i18n.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/jquery-ui-i18n.min.js
+	dh_link -p wok usr/share/javascript/jquery-ui/ui/i18n/jquery-ui-i18n.min.js usr/share/wok/ui/libs/jquery-ui/jquery-ui-i18n.min.js
+	# libjs-jquery-ui: /usr/share/javascript/jquery-ui/themes/base/jquery-ui.min.css
 	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-ui/themes/base/jquery-ui.min.css
-	dh_link -p wok usr/share/javascript/jquery-ui-themes/base/jquery-ui.min.css usr/share/wok/ui/libs/jquery-ui/themes/base/jquery-ui.min.css
+	dh_link -p wok usr/share/javascript/jquery-ui/themes/base/jquery-ui.min.css usr/share/wok/ui/libs/jquery-ui/themes/base/jquery-ui.min.css
+	# <package>: jquery-i18n/jquery.i18n.min.js
+	#rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/jquery-i18n/jquery.i18n.min.js
+	#dh_link -p wok usr/share/javascript/jquery-i18n/jquery.i18n.min.js usr/share/wok/ui/libs/jquery-i18n/jquery.i18n.min.js
+	# libjs-jquery-datatables: /usr/share/javascript/jquery-datatables/jquery.dataTables.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/datatables/js/datatables.min.js
+	dh_link -p wok usr/share/javascript/jquery-datatables/jquery.dataTables.min.js usr/share/wok/ui/libs/datatables/js/datatables.min.js
+	# libjs-jquery-datatables: /usr/share/javascript/jquery-datatables/css/jquery.dataTables.min.css
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/datatables/css/datatables.min.css
+	dh_link -p wok usr/share/javascript/jquery-datatables/css/jquery.dataTables.min.css usr/share/wok/ui/libs/datatables/css/datatables.min.css
+	# libjs-list.js: /usr/share/javascript/list.js/list.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/list-js/list.min.js
+	dh_link -p wok usr/share/javascript/list.js/list.min.js usr/share/wok/ui/libs/list-js/list.min.js
+	# libjs-lodash: /usr/share/javascript/lodash.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/lodash/lodash.js
+	dh_link -p wok usr/share/javascript/lodash.js usr/share/wok/ui/libs/lodash/lodash.js
+	# libjs-moment: /usr/share/javascript/moment/moment-with-locales.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/moment/moment-with-locales.min.js
+	dh_link -p wok usr/share/javascript/moment/moment-with-locales.min.js usr/share/wok/ui/libs/moment/moment-with-locales.min.js
+	# libjs-typeahead.js: /usr/share/javascript/typeahead.js/typeahead.bundle.min.js
+	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/typeahead/typeahead.bundle.min.js
+	dh_link -p wok usr/share/javascript/typeahead.js/typeahead.bundle.min.js usr/share/wok/ui/libs/typeahead/typeahead.bundle.min.js
+
 
 override_dh_auto_install:
 	dh_auto_install

@@ -1,4 +1,15 @@
-wok: package-contains-broken-symlink usr/share/wok/ui/libs/themes/base/jquery-ui.min.css
-wok: source-contains-prebuilt-javascript-object ui/libs/jquery-ui.min.js
-wok: source-contains-prebuilt-javascript-object ui/libs/jquery-ui-i18n.min.js
-wok: source-contains-prebuilt-javascript-object ui/libs/jquery-1.10.0.min.
+wok any source: source-contains-prebuilt-javascript-object ui/libs/bootstrap/bootstrap.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/bootstrap-editable/dist/js/bootstrap-editable.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/bootstrap-select/dist/js/bootstrap-select.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/bootstrap-switch/dist/js/bootstrap-switch.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/datatables/js/datatables.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/es5-shim/es5-shim.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/jquery-bootgrid/dist/js/jquery.bootgrid.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/jquery-i18n/jquery.i18n.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/jquery-ui/jquery-ui-i18n.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/jquery-ui/jquery-ui.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/jquery/jquery.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/list-js/list.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/lodash/lodash.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/moment/moment-with-locales.min.js
+wok any source: source-contains-prebuilt-javascript-object ui/libs/typeahead/typeahead.bundle.min.js

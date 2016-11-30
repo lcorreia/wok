@@ -27,6 +27,15 @@ Description: wok files for plugin development
 Package: wok
 Architecture: all
 Depends: gettext,
+         libjs-bootstrap,
+         libjs-es5-shim,
+         libjs-jquery,
+         libjs-jquery-ui,
+         libjs-jquery-datatables,
+         libjs-list.js,
+         libjs-lodash,
+         libjs-moment,
+         libjs-typeahead.js,
          nginx,
          openssl,
          python-cheetah,
