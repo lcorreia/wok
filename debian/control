@@ -1,13 +1,14 @@
 Source: wok
 Section: misc
 Priority: optional
-Maintainer: Frédéric Bonnard <frediz@linux.vnet.ibm.com>
+Maintainer: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Standards-Version: 3.9.6
 Build-Depends: cython, 
                debhelper (>= 9),
                dh-autoreconf,
                dh-systemd,
                dh-python,
+               python,
                pkg-config,
                openssl,
                pysassc,
@@ -17,6 +18,7 @@ Homepage: https://github.com/kimchi-project/wok
 
 Package: wok-dev
 Architecture: all
+Depends: ${misc:Depends}
 Description: wok files for plugin development
  Wok is a cherrypy-based web framework with HTML5 support that is extended by
  plugins which expose functionality through REST APIs.
@@ -28,6 +30,7 @@ Package: wok
 Architecture: all
 Depends: gettext,
          nginx,
+         openssl,
          python-cheetah,
          python-cherrypy3,
          python-m2crypto,
@@ -35,6 +38,10 @@ Depends: gettext,
          python-lxml,
          python-ldap,
          python-psutil,
+         python-jsonschema,
+         fonts-font-awesome,
+         logrotate,
+         texlive-fonts-extra,
          ${misc:Depends},
          ${python:Depends}
 Description: Webserver Originated from Kimchi
@@ -44,4 +51,4 @@ Description: Webserver Originated from Kimchi
  Examples of such plugins are Kimchi (Virtualization Management) and Ginger
  (System Administration). Wok comes with a sample plugin for education purposes.
  .
- Wok runs through wokd daemon.
+ Wok runs through wok service.

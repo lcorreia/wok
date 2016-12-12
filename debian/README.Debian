@@ -1,33 +1,33 @@
-Kimchi web site
+Wok web UI
 ---------------
-Just go to http://your_host/kimchi/ once installed.
+Just go to http://your_host:8001/wok/ once installed.
 
 Configuration
 -------------
-** Kimchi users:
-Users that can log in kimchi website should be member of libvirt group
-(authentication is based on kimchi pam service).
+** Wok users:
+Users that can log to Wok should be member of wok group
+(authentication is based on Wok pam service).
 Users need to be member of the sudo group to be able to manage guests.
 
-** Kimchi serving
+** Wok serving
 If you want to change the nginx configuration type :
 - use the corresponding configuration file : 
-    # cp /usr/share/doc/kimchi/examples/kimchi.virt.nginx
-         /etc/nginx/sites-available/kimchi
-    # vi /etc/nginx/sites-available/kimchi  # to change the hostname
+    # cp /usr/share/doc/wok/examples/wok.virt.nginx
+         /etc/nginx/sites-available/wok
+    # vi /etc/nginx/sites-available/wok  # to change the hostname
   or
-    # cp /usr/share/doc/kimchi/examples/kimchi.sub.nginx
-         /etc/nginx/sites-available/kimchi
+    # cp /usr/share/doc/wok/examples/wok.sub.nginx
+         /etc/nginx/sites-available/wok
   Then enable the configuration :
-    # ln /etc/nginx/sites-available/kimchi /etc/nginx/sites-enabled/kimchi
-- And restart kimchi and nginx :
+    # ln /etc/nginx/sites-available/wok /etc/nginx/sites-enabled/wok
+- And restart wok and nginx :
     # /etc/init.d/nginx restart
-    # /etc/init.d/kimchi restart
+    # /etc/init.d/wok restart
 
 
 Possible issues
 ---------------
-Error logs can be found in /var/log/kimchi/kimchi-error.log
+Error logs can be found in /var/log/wok/wok-error.log
 
 In case of trouble, make sure your installation of qemu/kvm is ok by testing
 with qemu ("qemu-system-ppc64 -nographic -enable-kvm" for instance on ppc64)

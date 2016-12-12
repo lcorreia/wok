@@ -1,13 +1,12 @@
-This package is being improved and everything is tracked at :
+This package is being improved and was split from kimchi package, which was
+being tracked at:
 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=772823
 
-package-contains-broken-symlink are overriden as symlinks get resolved when
-the dependencies are fulfilled.
+This builds wok-dev package necessary for building wok plugins (kimchi, ginger,
+ginger-base).
 
-We don't veriify upstream source tarball as upstream don't sign releases.
+We don't verify upstream source tarball as upstream don't sign releases.
 
-override_dh_auto_test is used to skip tests as testing implies creating VMs
-which is not always possible depending on the build environment/host.
-
-source-contains-prebuilt-javascript-object : we are depending on
-the jquery package.
+override_dh_auto_test is used to skip tests as testing implies creating users
+with correct permissions which is not always possible depending on the build
+environment/host.

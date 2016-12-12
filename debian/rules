@@ -10,8 +10,6 @@ override_dh_clean:
 	dh_clean po/gen-pot po/stamp-po src/wok/plugins/sample/po/stamp-po \
 	$(shell find ./ -name '*.gmo'| sed 's#[^/]*$$#*.gmo#'| sort|uniq) \
 	$(shell find ./ -name '*.mo' -type l)
-	#$(shell find ./ -name '*.pyc'| sed 's#[^/]*$$#*.pyc#'| sort|uniq) \
-	#src/wok-cert.pem src/wok-key.pem src/nginx_wok.conf
 
 override_dh_link:
 	dh_link
