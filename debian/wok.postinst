@@ -3,6 +3,9 @@ set -e
 
 if [ "$1" = "configure" ]; then
   # Generate certificates so that nginx can use them
+  if [ ! -e /etc/wok/dhparams.pem ]; then
+    openssl dhparam -dsaparam -out /etc/wok/dhparams.pem 2048 >/dev/null 2>&1
+  fi
   openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem \
     -out /etc/wok/wok-cert.pem -days 365 -nodes \
     -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1

@@ -1,0 +1,139 @@
+From 2a1bc94bdc6d6f365aa9fe2d403c6a74436d8e64 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Mon, 12 Dec 2016 10:19:16 -0200
+Subject: [PATCH] Generate dhparams in post-install
+
+The Diffie-Helmann key may be generated in post-install. To
+make it faster, add a -dsaparam parameter to the command.
+Also, when running from source, developer needs to run make
+dhparams.pem manually to run the server.
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ Makefile.am                | 2 --
+ contrib/DEBIAN/control.in  | 1 -
+ contrib/DEBIAN/postinst    | 3 +++
+ contrib/wok.spec.fedora.in | 4 +++-
+ contrib/wok.spec.suse.in   | 4 +++-
+ src/Makefile.am            | 8 +-------
+ src/wok/proxy.py           | 5 +----
+ 7 files changed, 11 insertions(+), 16 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 9a5297e..e03c758 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -148,8 +148,6 @@ install-data-local:
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/log/wok/
+ 	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-access.log
+ 	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-error.log
+-	mkdir -p $(DESTDIR)/etc/wok/
+-	$(INSTALL_DATA) src/dhparams.pem $(DESTDIR)/etc/wok/dhparams.pem
+ 	mkdir -p $(DESTDIR)/etc/logrotate.d/
+ 	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wok
+ 	mkdir -p $(DESTDIR)/etc/nginx/sites-available
+diff --git a/contrib/DEBIAN/control.in b/contrib/DEBIAN/control.in
+index 16f8afc..ba083b3 100644
+--- a/contrib/DEBIAN/control.in
++++ b/contrib/DEBIAN/control.in
+@@ -19,7 +19,6 @@ Depends: python-cherrypy3 (>= 3.2.0),
+          texlive-fonts-extra
+ Build-Depends: xsltproc,
+                gettext,
+-               openssl,
+                python-lxml,
+                pkg-config
+ Maintainer: Aline Manera <alinefm@br.ibm.com>
+diff --git a/contrib/DEBIAN/postinst b/contrib/DEBIAN/postinst
+index 473e515..73e6935 100755
+--- a/contrib/DEBIAN/postinst
++++ b/contrib/DEBIAN/postinst
+@@ -20,6 +20,9 @@
+ 
+ systemd_exists=$(type /bin/systemctl > /dev/null 2>&1; echo $?)
+ if test $systemd_exists = "0"; then
++    if [ ! -e /etc/wok/dhparams.pem ]; then
++        openssl dhparam -dsaparam -out /etc/wok/dhparams.pem 2048 >/dev/null 2>&1 || :
++    fi
+     openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem -out /etc/wok/wok-cert.pem -days 365 -nodes -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1 || :
+     /bin/systemctl enable wokd > /dev/null 2>&1
+     /bin/systemctl daemon-reload > /dev/null 2>&1
+diff --git a/contrib/wok.spec.fedora.in b/contrib/wok.spec.fedora.in
+index fcada13..fa2cd67 100644
+--- a/contrib/wok.spec.fedora.in
++++ b/contrib/wok.spec.fedora.in
+@@ -23,7 +23,6 @@ Requires:	logrotate
+ Requires:	openssl
+ BuildRequires:	gettext-devel
+ BuildRequires:	libxslt
+-BuildRequires:	openssl
+ BuildRequires:	python-lxml
+ 
+ %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
+@@ -78,6 +77,9 @@ if [ $1 -eq 1 ] ; then
+     # Initial installation
+     /bin/systemctl enable wokd.service >/dev/null 2>&1 || :
+     /bin/systemctl daemon-reload >/dev/null 2>&1 || :
++    if [ ! -e /etc/wok/dhparams.pem ]; then
++        openssl dhparam -dsaparam -out /etc/wok/dhparams.pem 2048 >/dev/null 2>&1 || :
++    fi
+     openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem -out /etc/wok/wok-cert.pem -days 365 -nodes -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1 || :
+ fi
+ 
+diff --git a/contrib/wok.spec.suse.in b/contrib/wok.spec.suse.in
+index ea2e708..244d75f 100644
+--- a/contrib/wok.spec.suse.in
++++ b/contrib/wok.spec.suse.in
+@@ -24,7 +24,6 @@ Requires:	logrotate
+ Requires:	openssl
+ BuildRequires:	gettext-tools
+ BuildRequires:	libxslt-tools
+-BuildRequires:	openssl
+ BuildRequires:	python-lxml
+ 
+ %if 0%{?suse_version} == 1100
+@@ -58,6 +57,9 @@ if [ $1 -eq 1 ] ; then
+     %else
+         chkconfig wokd on
+     %endif
++    if [ ! -e /etc/wok/dhparams.pem ]; then
++        openssl dhparam -dsaparam -out /etc/wok/dhparams.pem 2048 >/dev/null 2>&1 || :
++    fi
+     openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem -out /etc/wok/wok-cert.pem -days 365 -nodes -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1 || :
+ fi
+ exit 0
+diff --git a/src/Makefile.am b/src/Makefile.am
+index abc53ec..5d169e7 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -48,10 +48,4 @@ wokd: wokd.in Makefile
+ wok.conf: wok.conf.in Makefile
+ 	$(do_substitution) < wok.conf.in > wok.conf
+ 
+-# Generate unique Diffie-Hellman group with 2048-bit
+-all-local: dhparams.pem
+-
+-dhparams.pem:
+-	openssl dhparam -out dhparams.pem 2048
+-
+-CLEANFILES = $(bin_SCRIPTS) $(BUILT_SOURCES) dhparams.pem
++CLEANFILES = $(bin_SCRIPTS) $(BUILT_SOURCES)
+diff --git a/src/wok/proxy.py b/src/wok/proxy.py
+index 8ebb869..5ecd507 100644
+--- a/src/wok/proxy.py
++++ b/src/wok/proxy.py
+@@ -48,10 +48,7 @@ def check_proxy_config():
+     # Create a symbolic link in system's dir to prevent errors while
+     # running from source code
+     symlinks = [{'target': os.path.join(paths.nginx_conf_dir, 'wok.conf'),
+-                 'link': os.path.join(paths.sys_nginx_conf_dir,
+-                                      'wok.conf')},
+-                {'target': os.path.join(paths.conf_dir, 'dhparams.pem'),
+-                 'link': os.path.join(paths.sys_conf_dir, 'dhparams.pem')}]
++                 'link': os.path.join(paths.sys_nginx_conf_dir, 'wok.conf')}]
+     for item in symlinks:
+         link = item['link']
+         if os.path.isfile(link) or os.path.islink(link):
+-- 
+2.7.4
+
