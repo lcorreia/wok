@@ -1,6 +1,6 @@
-wok (2.3.0-1) unstable; urgency=low
+wok (2.3.1-1) unstable; urgency=low
 
   * Initial release (Closes: #846595)
   * wok package was split from kimchi package (#772823)
 
- -- Lucio Correia <luciojhc@linux.vnet.ibm.com>  Thu, 20 Oct 2016 14:18:47 -0200
+ -- Lucio Correia <luciojhc@linux.vnet.ibm.com>  Fri, 23 Dec 2016 11:30:16 -0200
