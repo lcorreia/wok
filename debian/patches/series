@@ -16,4 +16,4 @@
 0001-Bug-fix-191-Add-updated-lodash.min.js-file.patch
 0002-Bug-fix-191-Break-lines-content-to-be-smaller-than-5.patch
 0001-Update-Datatables-Switch-and-Editable-libraries.patch
-0001-Generate-dhparams-in-post-install.patch
+0001-Remove-execution-permission-from-css-files.patch

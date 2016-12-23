@@ -1,0 +1,25 @@
+From 4205cee6bcfa3a72bc14aae48edde67ef3ab3a95 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Fri, 23 Dec 2016 16:40:28 -0200
+Subject: [PATCH] [Wok] Remove execution permission from css files
+
+Debian build system has detected unnecessary execution
+permission bits in some files. Fix them.
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ ui/css/src/vendor/compass-mixins/lib/compass/functions/_display.scss | 0
+ ui/css/src/wok.scss                                                  | 0
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 ui/css/src/vendor/compass-mixins/lib/compass/functions/_display.scss
+ mode change 100755 => 100644 ui/css/src/wok.scss
+
+diff --git a/ui/css/src/vendor/compass-mixins/lib/compass/functions/_display.scss b/ui/css/src/vendor/compass-mixins/lib/compass/functions/_display.scss
+old mode 100755
+new mode 100644
+diff --git a/ui/css/src/wok.scss b/ui/css/src/wok.scss
+old mode 100755
+new mode 100644
+-- 
+2.7.4
+
