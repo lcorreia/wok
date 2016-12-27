@@ -9,17 +9,10 @@ if [ "$1" = "configure" ]; then
   openssl req -x509 -newkey rsa:4096 -keyout /etc/wok/wok-key.pem \
     -out /etc/wok/wok-cert.pem -days 365 -nodes \
     -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1
-  ln -sf /etc/nginx/sites-available/wok.conf /etc/nginx/sites-enabled/wok.conf
-  if which invoke-rc.d >/dev/null 2>&1; then
-    invoke-rc.d nginx restart
-  else
-    /etc/init.d/nginx restart
-  fi
-  if which invoke-rc.d >/dev/null 2>&1; then
-    invoke-rc.d wok restart
-  else
-    /etc/init.d/wok restart
-  fi
+  [ "$2" ] || ln -sf /etc/nginx/sites-available/wok.conf \
+                     /etc/nginx/sites-enabled/wok.conf
+  invoke-rc.d nginx restart
+  invoke-rc.d wok restart
 fi
 
 #DEBHELPER#
