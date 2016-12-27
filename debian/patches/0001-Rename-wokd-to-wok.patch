@@ -1,15 +1,16 @@
-From 84a6e2b52c5e02709e2d00c86748aa87f1e470c2 Mon Sep 17 00:00:00 2001
+From b4e4ca48bf52714345b08035659a249fe84399c2 Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Wed, 16 Nov 2016 15:43:40 -0200
 Subject: [PATCH] Rename wokd to wok
 
 Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 ---
- Makefile.am | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+ Makefile.am       | 26 +++++++++++---------------
+ src/firewalld.xml |  4 ++--
+ 2 files changed, 13 insertions(+), 17 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 6f4804e..42a8e6ec 100644
+index 14050d9..9a5297e 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -91,7 +91,7 @@ install-deb: install
@@ -21,7 +22,16 @@ index 6f4804e..42a8e6ec 100644
  	else \
  		$(MKDIR_P) $(DESTDIR)/etc/init; \
  		cp -R $(top_srcdir)/contrib/wokd-upstart.conf.debian \
-@@ -137,11 +137,7 @@ ChangeLog:
+@@ -100,7 +100,7 @@ install-deb: install
+ 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/lib/wok/
+ 	$(MKDIR_P) $(DESTDIR)/usr/lib/firewalld/services
+ 	cp -R $(top_srcdir)/src/firewalld.xml \
+-		$(DESTDIR)/usr/lib/firewalld/services/wokd.xml
++		$(DESTDIR)/usr/lib/firewalld/services/wok.xml
+ 
+ 
+ deb: contrib/make-deb.sh
+@@ -140,14 +140,10 @@ ChangeLog:
  install-data-local:
  	@if test -d "$(systemdsystemunitdir)" ; then \
  		mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
@@ -32,9 +42,19 @@ index 6f4804e..42a8e6ec 100644
 -		chmod +x $(DESTDIR)/etc/init.d/wokd; \
 +		$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wok.service; \
  	fi; \
- 	if test -d /usr/lib/firewalld/services/; then \
- 		mkdir -p $(DESTDIR)/usr/lib/firewalld/services/; \
-@@ -159,10 +155,10 @@ install-data-local:
+ 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services/;
+-	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml;
++	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wok.xml;
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/lib/wok/
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/log/wok/
+ 	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-access.log
+@@ -155,24 +151,24 @@ install-data-local:
+ 	mkdir -p $(DESTDIR)/etc/wok/
+ 	$(INSTALL_DATA) src/dhparams.pem $(DESTDIR)/etc/wok/dhparams.pem
+ 	mkdir -p $(DESTDIR)/etc/logrotate.d/
+-	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wokd
++	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wok
+ 	mkdir -p $(DESTDIR)/etc/nginx/sites-available
  	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/sites-available/wok.conf
  
  uninstall-local:
@@ -48,7 +68,32 @@ index 6f4804e..42a8e6ec 100644
 +		$(RM) $(DESTDIR)/etc/init.d/wok; \
  		$(RM) $(DESTDIR)/etc/init/wok.conf; \
  	fi; \
- 	if test -d /usr/lib/firewalld/services/; then \
+-	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml
++	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wok.xml
+ 	rmdir $(DESTDIR)/usr/lib/firewalld/services && rmdir $(DESTDIR)/usr/lib/firewalld || :
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/lib/wok
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/log/wok
+ 	$(RM) -rf $(DESTDIR)/etc/wok
+ 	$(RM) $(DESTDIR)/etc/nginx/sites-available/wok.conf
+-	$(RM) $(DESTDIR)/etc/logrotate.d/wokd
++	$(RM) $(DESTDIR)/etc/logrotate.d/wok
+ 
+ VERSION:
+ 	@if $(GIT) rev-parse &> /dev/null ; then              \
+diff --git a/src/firewalld.xml b/src/firewalld.xml
+index 3a564fe..eafd18a 100644
+--- a/src/firewalld.xml
++++ b/src/firewalld.xml
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <service>
+-  <short>wokd</short>
+-  <description>wokd is a daemon service for wok which is a web framework.</description>
++  <short>wok</short>
++  <description>wok is a daemon service for wok which is a web framework.</description>
+   <port protocol="tcp" port="8000"/>
+   <port protocol="tcp" port="8001"/>
+ </service>
 -- 
 2.7.4
 

@@ -1,0 +1,150 @@
+From f60275d39784aaa6619609061e86a4229b4614e7 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Tue, 27 Dec 2016 17:52:10 -0200
+Subject: [PATCH] Always install firewalld conf for all distributions
+
+Even if firewalld is not installed, Wok should install
+specific wokd.xml for it, for the case firewalld is
+installed afterwards.
+
+This patch does that by removing checks for existing
+firewalld directory and removing all build and runtime
+dependencies on firewalld, since it's not required to
+run Wok.
+
+Also, by always installing config for firealld, it
+fixes issues #27 and #185 another way.
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ Makefile.am                | 14 +++++++-------
+ contrib/wok.spec.fedora.in |  4 +---
+ contrib/wok.spec.suse.in   |  2 +-
+ docs/fedora-deps.md        |  2 +-
+ docs/opensuse-deps.md      |  2 +-
+ 5 files changed, 11 insertions(+), 13 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 6f4804e..14050d9 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -98,6 +98,9 @@ install-deb: install
+ 			$(DESTDIR)/etc/init/wokd.conf; \
+ 	fi
+ 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/lib/wok/
++	$(MKDIR_P) $(DESTDIR)/usr/lib/firewalld/services
++	cp -R $(top_srcdir)/src/firewalld.xml \
++		$(DESTDIR)/usr/lib/firewalld/services/wokd.xml
+ 
+ 
+ deb: contrib/make-deb.sh
+@@ -143,10 +146,8 @@ install-data-local:
+ 		$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
+ 		chmod +x $(DESTDIR)/etc/init.d/wokd; \
+ 	fi; \
+-	if test -d /usr/lib/firewalld/services/; then \
+-		mkdir -p $(DESTDIR)/usr/lib/firewalld/services/; \
+-		$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml; \
+-	fi; \
++	mkdir -p $(DESTDIR)/usr/lib/firewalld/services/;
++	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml;
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/lib/wok/
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/log/wok/
+ 	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-access.log
+@@ -165,9 +166,8 @@ uninstall-local:
+ 		$(RM) $(DESTDIR)/etc/init.d/wokd; \
+ 		$(RM) $(DESTDIR)/etc/init/wok.conf; \
+ 	fi; \
+-	if test -d /usr/lib/firewalld/services/; then \
+-		$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml; \
+-	fi; \
++	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml
++	rmdir $(DESTDIR)/usr/lib/firewalld/services && rmdir $(DESTDIR)/usr/lib/firewalld || :
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/lib/wok
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/log/wok
+ 	$(RM) -rf $(DESTDIR)/etc/wok
+diff --git a/contrib/wok.spec.fedora.in b/contrib/wok.spec.fedora.in
+index 0119381..fcada13 100644
+--- a/contrib/wok.spec.fedora.in
++++ b/contrib/wok.spec.fedora.in
+@@ -21,7 +21,6 @@ Requires:	fontawesome-fonts
+ Requires:	open-sans-fonts
+ Requires:	logrotate
+ Requires:	openssl
+-BuildRequires:  firewalld
+ BuildRequires:	gettext-devel
+ BuildRequires:	libxslt
+ BuildRequires:	openssl
+@@ -39,7 +38,6 @@ BuildRequires:    python-unittest2
+ 
+ %if 0%{?with_systemd}
+ Requires:	systemd
+-Requires:	firewalld
+ Requires(post): systemd
+ Requires(preun): systemd
+ Requires(postun): systemd
+@@ -115,6 +113,7 @@ rm -rf $RPM_BUILD_ROOT
+ %{python_sitelib}/wok/plugins/*.py*
+ %{python_sitelib}/wok/
+ %{_prefix}/share/locale/*/LC_MESSAGES/wok.mo
++%{_prefix}/lib/firewalld/services/wokd.xml
+ %{_datadir}/wok/ui/
+ %{_datadir}/wok
+ %{_sysconfdir}/wok/wok.conf
+@@ -128,7 +127,6 @@ rm -rf $RPM_BUILD_ROOT
+ %{_localstatedir}/log/wok/*
+ %{_localstatedir}/log/wok/
+ %{_unitdir}/wokd.service
+-%{_prefix}/lib/firewalld/services/wokd.xml
+ %endif
+ %if 0%{?rhel} == 6
+ /etc/init/wokd.conf
+diff --git a/contrib/wok.spec.suse.in b/contrib/wok.spec.suse.in
+index 8bed37a..ea2e708 100644
+--- a/contrib/wok.spec.suse.in
++++ b/contrib/wok.spec.suse.in
+@@ -22,7 +22,6 @@ Requires:	fontawesome-fonts
+ Requires:	google-opensans-fonts
+ Requires:	logrotate
+ Requires:	openssl
+-BuildRequires:  firewalld
+ BuildRequires:	gettext-tools
+ BuildRequires:	libxslt-tools
+ BuildRequires:	openssl
+@@ -110,6 +109,7 @@ rm -rf $RPM_BUILD_ROOT
+ %{_localstatedir}/log/wok/*
+ %{_localstatedir}/log/wok/
+ %{_mandir}/man8/wokd.8.gz
++%{_prefix}/lib/firewalld/services/wokd.xml
+ 
+ %if 0%{?with_systemd}
+ %{_unitdir}/wokd.service
+diff --git a/docs/fedora-deps.md b/docs/fedora-deps.md
+index fa99f30..260390e 100644
+--- a/docs/fedora-deps.md
++++ b/docs/fedora-deps.md
+@@ -20,7 +20,7 @@ Build Dependencies
+ --------------------
+ 
+     $ sudo yum install gcc make autoconf automake gettext-devel git rpm-build \
+-                        libxslt firewalld
++                        libxslt
+ 
+ Runtime Dependencies
+ --------------------
+diff --git a/docs/opensuse-deps.md b/docs/opensuse-deps.md
+index ad4ed92..7fe1763 100644
+--- a/docs/opensuse-deps.md
++++ b/docs/opensuse-deps.md
+@@ -10,7 +10,7 @@ Build Dependencies
+ --------------------
+ 
+     $ sudo zypper install gcc make autoconf automake gettext-tools git \
+-                          rpm-build libxslt-tools firewalld
++                          rpm-build libxslt-tools
+ 
+ Runtime Dependencies
+ --------------------
+-- 
+2.7.4
+
