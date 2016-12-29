@@ -1,0 +1,25 @@
+From af1be191e6180a775233148a9965c976389a9828 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Thu, 29 Dec 2016 10:12:52 -0200
+Subject: [PATCH] Remove redundant kill on ExecStop
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ contrib/wokd.service.systemd | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/contrib/wokd.service.systemd b/contrib/wokd.service.systemd
+index d21c845..0628c2d 100644
+--- a/contrib/wokd.service.systemd
++++ b/contrib/wokd.service.systemd
+@@ -6,7 +6,6 @@ After=nginx.service
+ [Service]
+ Type=simple
+ ExecStart=/usr/bin/wokd
+-ExecStop=/bin/kill -TERM $MAINPID
+ EnvironmentFile=/etc/wok/wok.conf
+ KillMode=process
+ 
+-- 
+2.7.4
+
