@@ -1,1 +1,8 @@
-usr/share/wok/scss
+usr/share/wok/scss/bootstrap-select.custom.scss
+usr/share/wok/scss/bootstrap.custom.scss
+usr/share/wok/scss/datatables.bootstrap.scss
+usr/share/wok/scss/modules
+usr/share/wok/scss/settings.scss
+usr/share/wok/scss/vendor/bootstrap-sass/bootstrap
+usr/share/wok/scss/vendor/compass-mixins/lib
+usr/share/wok/scss/wok.scss
