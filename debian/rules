@@ -7,6 +7,7 @@ export AUTOPOINT=true
 	dh $@ --with python2
 
 override_dh_clean:
+	dh_clean ui/pages/help/ditaval.dtd
 	dh_clean po/gen-pot po/stamp-po src/wok/plugins/sample/po/stamp-po \
 	$(shell find ./ -name '*.gmo'| sed 's#[^/]*$$#*.gmo#'| sort|uniq) \
 	$(shell find ./ -name '*.mo' -type l)
@@ -55,6 +56,7 @@ override_dh_link:
 	dh_link -p wok usr/share/javascript/typeahead.js/typeahead.bundle.min.js usr/share/wok/ui/libs/typeahead/typeahead.bundle.min.js
 
 override_dh_auto_build:
+	ln -s /usr/share/dita-ot/dtd/ditaval/dtd/ditaval.dtd $(CURDIR)/ui/pages/help/ditaval.dtd
 	$(MAKE) -j1
 
 override_dh_auto_install:

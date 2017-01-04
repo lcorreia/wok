@@ -19,3 +19,4 @@
 0001-Update-Datatables-Switch-and-Editable-libraries.patch
 0001-Remove-execution-permission-from-css-files.patch
 0001-Remove-redundant-kill-on-ExecStop.patch
+0001-Fix-import-path-for-DITA-DTD.patch

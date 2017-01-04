@@ -1,0 +1,26 @@
+From 86fbccc5722f3007198530cfeac80cf0f14f96e4 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Wed, 4 Jan 2017 14:44:36 -0200
+Subject: [PATCH] Fix import path for DITA DTD
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ ui/pages/help/en_US/settings.dita | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/pages/help/en_US/settings.dita b/ui/pages/help/en_US/settings.dita
+index bebac17..32d4210 100644
+--- a/ui/pages/help/en_US/settings.dita
++++ b/ui/pages/help/en_US/settings.dita
+@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ -->
+ <!--Arbortext, Inc., 1988-2011, v.4002-->
+ <!DOCTYPE cshelp PUBLIC "-//IBM//DTD DITA CSHelp//EN"
+- "..\dtd\cshelp.dtd">
++ "../ditaval.dtd">
+ <?Pub Sty _display FontColor="red"?>
+ <?Pub Inc?>
+ <!--This DITA specialized document type is not supported by the Authoring Tools development team.
+-- 
+2.7.4
+
