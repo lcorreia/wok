@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 -->
 <!--Arbortext, Inc., 1988-2011, v.4002-->
 <!DOCTYPE cshelp PUBLIC "-//IBM//DTD DITA CSHelp//EN"
- "..\dtd\cshelp.dtd">
+ "../ditaval.dtd">
 <?Pub Sty _display FontColor="red"?>
 <?Pub Inc?>
 <!--This DITA specialized document type is not supported by the Authoring Tools development team.
