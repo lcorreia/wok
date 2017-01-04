@@ -54,6 +54,8 @@ override_dh_link:
 	rm -f $(CURDIR)/debian/wok/usr/share/wok/ui/libs/typeahead/typeahead.bundle.min.js
 	dh_link -p wok usr/share/javascript/typeahead.js/typeahead.bundle.min.js usr/share/wok/ui/libs/typeahead/typeahead.bundle.min.js
 
+override_dh_auto_build:
+	$(MAKE) -j1
 
 override_dh_auto_install:
 	dh_auto_install
