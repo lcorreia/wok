@@ -49,6 +49,7 @@ Depends: gettext,
          python-jsonschema,
          fonts-font-awesome,
          logrotate,
+         sudo,
          texlive-fonts-extra,
          ${misc:Depends},
          ${python:Depends}
