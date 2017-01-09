@@ -1,4 +1,4 @@
-From bd03e59ca2dce8be780bdbfb09128ab052296db4 Mon Sep 17 00:00:00 2001
+From 111035760b5b40a016e0f5bcbf6c7a5a629ffb4b Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Thu, 10 Nov 2016 15:31:25 -0200
 Subject: [PATCH] Adapt nginx configuration
@@ -7,8 +7,9 @@ Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 ---
  Makefile.am           | 6 +++---
  src/nginx/Makefile.am | 2 +-
- src/wok/config.py.in  | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ src/wok/config.py.in  | 3 ++-
+ src/wok/proxy.py      | 5 +++++
+ 4 files changed, 11 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
 index 539c6a2..6f4804e 100644
@@ -47,18 +48,35 @@ index 3a47a5f..52348f3 100644
  dist_conf_DATA = wok.conf
  
 diff --git a/src/wok/config.py.in b/src/wok/config.py.in
-index dcc05c7..9ba7a5a 100644
+index dcc05c7..47346c7 100644
 --- a/src/wok/config.py.in
 +++ b/src/wok/config.py.in
-@@ -77,7 +77,7 @@ class Paths(object):
+@@ -77,7 +77,8 @@ class Paths(object):
          self.installed = (self.prefix == '@pkgdatadir@')
          self.ui_dir = self.add_prefix('ui')
          self.sys_conf_dir = '@sysconfdir@/wok'
 -        self.sys_nginx_conf_dir = '@sysconfdir@/nginx/conf.d'
 +        self.sys_nginx_conf_dir = '@sysconfdir@/nginx/sites-available/'
++        self.sys_nginx_enable_dir = '@sysconfdir@/nginx/sites-enabled/'
  
          if self.installed:
              self.conf_dir = self.sys_conf_dir
+diff --git a/src/wok/proxy.py b/src/wok/proxy.py
+index 8ebb869..e53597e 100644
+--- a/src/wok/proxy.py
++++ b/src/wok/proxy.py
+@@ -58,6 +58,11 @@ def check_proxy_config():
+             os.remove(link)
+         os.symlink(item['target'], link)
+ 
++    # Enable wok config
++    enabled = os.path.join(paths.sys_nginx_enable_dir, 'wok.conf')
++    if not os.path.exists(enabled):
++        os.symlink(os.path.join(paths.sys_nginx_conf_dir, 'wok.conf'), enabled)
++
+     # Create cert files if they don't exist
+     cert = os.path.join(paths.sys_conf_dir, 'wok-cert.pem')
+     key = os.path.join(paths.sys_conf_dir, 'wok-key.pem')
 -- 
 2.7.4
 

@@ -1,3 +1,4 @@
+0001-Ignore-code-cosmetics-checkings-to-avoid-build-issue.patch
 0001-Add-support-to-relative-paths.patch
 0002-Fix-UI-to-handle-relative-paths.patch
 0003-CSS-updates-to-handle-relative-path-support.patch

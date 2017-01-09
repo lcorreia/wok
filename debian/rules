@@ -7,6 +7,7 @@ export AUTOPOINT=true
 	dh $@ --with python2
 
 override_dh_clean:
+	rm -Rf data
 	dh_clean ui/pages/help/ditaval.dtd
 	dh_clean po/gen-pot po/stamp-po src/wok/plugins/sample/po/stamp-po \
 	$(shell find ./ -name '*.gmo'| sed 's#[^/]*$$#*.gmo#'| sort|uniq) \
@@ -69,6 +70,3 @@ override_dh_auto_install:
 	mkdir -p $(CURDIR)/debian/tmp/usr/share/wok/scss
 	#cp $(CURDIR)/ui/css/src/modules/* $(CURDIR)/debian/tmp/usr/share/wok/scss
 	cp -fr $(CURDIR)/ui/css/src/* $(CURDIR)/debian/tmp/usr/share/wok/scss
-
-override_dh_auto_test:
-	echo "Skipping tests"

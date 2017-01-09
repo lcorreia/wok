@@ -12,7 +12,19 @@ Build-Depends: cython,
                openssl,
                pysassc,
                pyflakes,
-               xsltproc
+               xsltproc,
+               gettext,
+               nginx,
+               logrotate,
+               sudo,
+               python-cheetah,
+               python-cherrypy3,
+               python-jsonschema,
+               python-ldap,
+               python-m2crypto,
+               python-pam,
+               python-psutil,
+               texlive-fonts-extra
 Homepage: https://github.com/kimchi-project/wok
 
 Package: wok-dev
