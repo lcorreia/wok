@@ -1,13 +1,18 @@
-From 173f5a4e4932651f6e12fa9ca7eafcbd7d3e213e Mon Sep 17 00:00:00 2001
+From 794274175b226b15bf4fb101e2fcae71b3e151bc Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Fri, 11 Nov 2016 15:27:47 -0200
 Subject: [PATCH] Serve wok from relative path /wok
 
 Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 ---
- src/nginx/wok.conf | 6 +++---
- src/wok.conf.in    | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ src/nginx/wok.conf        |  6 +++---
+ src/wok.conf.in           |  2 +-
+ tests/test_api.py         | 14 ++++++------
+ tests/test_exception.py   | 16 +++++++-------
+ tests/test_server.py      | 54 +++++++++++++++++++++++------------------------
+ tests/test_server_root.py |  4 ++--
+ tests/utils.py            |  2 +-
+ 7 files changed, 49 insertions(+), 49 deletions(-)
 
 diff --git a/src/nginx/wok.conf b/src/nginx/wok.conf
 index 7fadf38..71d0906 100644
@@ -50,6 +55,303 @@ index 3806609..04a60b1 100644
  
  [logging]
  # Log directory
+diff --git a/tests/test_api.py b/tests/test_api.py
+index 23c263d..156c037 100644
+--- a/tests/test_api.py
++++ b/tests/test_api.py
+@@ -47,7 +47,7 @@ class APITests(unittest.TestCase):
+         self.request = partial(utils.request)
+ 
+     def test_config(self):
+-        resp = self.request('/config').read()
++        resp = self.request('/wok/config').read()
+         conf = json.loads(resp)
+         keys = ["auth", "proxy_port", "websockets_port", "version",
+                 "server_root"]
+@@ -61,13 +61,13 @@ class APITests(unittest.TestCase):
+ 
+         user, pw = utils.fake_user.items()[0]
+         req = json.dumps({'username': user, 'password': pw})
+-        resp = self.request('/login', req, 'POST', hdrs)
++        resp = self.request('/wok/login', req, 'POST', hdrs)
+ 
+-        resp = self.request('/logout', '{}', 'POST', hdrs)
++        resp = self.request('/wok/logout', '{}', 'POST', hdrs)
+         self.assertEquals(200, resp.status)
+ 
+         # Test user logs JSON response
+-        resp = self.request('/logs?app=wok&download=True').read()
++        resp = self.request('/wok/logs?app=wok&download=True').read()
+         conf = json.loads(resp)
+         self.assertIn('records', conf)
+         self.assertIn('uri', conf)
+@@ -95,10 +95,10 @@ class APITests(unittest.TestCase):
+ 
+         taskid = AsyncTask('', continuous_ops, {'result': True},
+                            kill_function).id
+-        tasks = json.loads(self.request('/tasks').read())
++        tasks = json.loads(self.request('/wok/tasks').read())
+         self.assertLessEqual(1, len(tasks))
+         time.sleep(10)
+-        resp = self.request('/tasks/%s' % taskid, '{}', 'DELETE')
++        resp = self.request('/wok/tasks/%s' % taskid, '{}', 'DELETE')
+         self.assertEquals(204, resp.status)
+-        task = json.loads(self.request('/tasks/%s' % taskid).read())
++        task = json.loads(self.request('/wok/tasks/%s' % taskid).read())
+         self.assertEquals('killed', task['status'])
+diff --git a/tests/test_exception.py b/tests/test_exception.py
+index 8dd20d8..25f34a1 100644
+--- a/tests/test_exception.py
++++ b/tests/test_exception.py
+@@ -47,17 +47,17 @@ class ExceptionTests(unittest.TestCase):
+         setup_server('production')
+ 
+         # test 404
+-        resp = json.loads(request('/tasks/blah').read())
++        resp = json.loads(request('/wok/tasks/blah').read())
+         self.assertEquals('404 Not Found', resp.get('code'))
+ 
+         # test 405 wrong method
+-        resp = json.loads(request('/', None, 'DELETE').read())
++        resp = json.loads(request('/wok', None, 'DELETE').read())
+         msg = u'WOKAPI0002E: Delete is not allowed for wokroot'
+         self.assertEquals('405 Method Not Allowed', resp.get('code'))
+         self.assertEquals(msg, resp.get('reason'))
+ 
+         # test 400 parse error
+-        resp = json.loads(request('/tasks', '{',
++        resp = json.loads(request('/wok/tasks', '{',
+                                   'POST').read())
+         msg = u'WOKAPI0006E: Unable to parse JSON request'
+         self.assertEquals('400 Bad Request', resp.get('code'))
+@@ -66,7 +66,7 @@ class ExceptionTests(unittest.TestCase):
+ 
+         # test 405 method not allowed
+         req = json.dumps({})
+-        resp = json.loads(request('/tasks', req, 'POST').read())
++        resp = json.loads(request('/wok/tasks', req, 'POST').read())
+         m = u"WOKAPI0005E: Create is not allowed for tasks"
+         self.assertEquals('405 Method Not Allowed', resp.get('code'))
+         self.assertEquals(m, resp.get('reason'))
+@@ -77,17 +77,17 @@ class ExceptionTests(unittest.TestCase):
+         """
+         setup_server()
+         # test 404
+-        resp = json.loads(request('/tasks/blah').read())
++        resp = json.loads(request('/wok/tasks/blah').read())
+         self.assertEquals('404 Not Found', resp.get('code'))
+ 
+         # test 405 wrong method
+-        resp = json.loads(request('/', None, 'DELETE').read())
++        resp = json.loads(request('/wok', None, 'DELETE').read())
+         msg = u'WOKAPI0002E: Delete is not allowed for wokroot'
+         self.assertEquals('405 Method Not Allowed', resp.get('code'))
+         self.assertEquals(msg, resp.get('reason'))
+ 
+         # test 400 parse error
+-        resp = json.loads(request('/tasks', '{', 'POST').read())
++        resp = json.loads(request('/wok/tasks', '{', 'POST').read())
+         msg = u'WOKAPI0006E: Unable to parse JSON request'
+         self.assertEquals('400 Bad Request', resp.get('code'))
+         self.assertEquals(msg, resp.get('reason'))
+@@ -95,7 +95,7 @@ class ExceptionTests(unittest.TestCase):
+ 
+         # test 405 method not allowed
+         req = json.dumps({})
+-        resp = json.loads(request('/tasks', req, 'POST').read())
++        resp = json.loads(request('/wok/tasks', req, 'POST').read())
+         m = u"WOKAPI0005E: Create is not allowed for tasks"
+         self.assertEquals('405 Method Not Allowed', resp.get('code'))
+         self.assertEquals(m, resp.get('reason'))
+diff --git a/tests/test_server.py b/tests/test_server.py
+index f1950e0..5987348 100644
+--- a/tests/test_server.py
++++ b/tests/test_server.py
+@@ -63,7 +63,7 @@ class ServerTests(unittest.TestCase):
+         """
+         Test that we can start a server and receive HTTP:200.
+         """
+-        resp = self.request('/')
++        resp = self.request('/wok')
+         self.assertEquals(200, resp.status)
+ 
+     def test_multithreaded_connection(self):
+@@ -121,13 +121,13 @@ class ServerTests(unittest.TestCase):
+         """
+         A non-existent path should return HTTP:404
+         """
+-        url_list = ['/doesnotexist', '/tasks/blah']
++        url_list = ['/wok/doesnotexist', '/wok/tasks/blah']
+         for url in url_list:
+             resp = self.request(url)
+             self.assertEquals(404, resp.status)
+ 
+         # Verify it works for DELETE too
+-        resp = self.request('/tasks/blah', '', 'DELETE')
++        resp = self.request('/wok/tasks/blah', '', 'DELETE')
+         self.assertEquals(404, resp.status)
+ 
+     def test_accepts(self):
+@@ -139,39 +139,39 @@ class ServerTests(unittest.TestCase):
+           If both of the above (in any order), serve the rest api
+           If neither of the above, HTTP:406
+         """
+-        resp = self.request("/", headers={})
++        resp = self.request("/wok", headers={})
+         location = resp.getheader('location')
+         self.assertTrue(location.endswith("login.html"))
+-        resp = self.request("/login.html", headers={})
++        resp = self.request("/wok/login.html", headers={})
+         self.assertTrue('<!doctype html>' in resp.read().lower())
+ 
+-        resp = self.request("/", headers={'Accept': 'application/json'})
++        resp = self.request("/wok", headers={'Accept': 'application/json'})
+         self.assertValidJSON(resp.read())
+ 
+-        resp = self.request("/", headers={'Accept': 'text/html'})
++        resp = self.request("/wok", headers={'Accept': 'text/html'})
+         location = resp.getheader('location')
+         self.assertTrue(location.endswith("login.html"))
+ 
+-        resp = self.request("/", headers={'Accept':
+-                                          'application/json, text/html'})
++        resp = self.request("/wok", headers={'Accept':
++                                             'application/json, text/html'})
+         self.assertValidJSON(resp.read())
+ 
+-        resp = self.request("/", headers={'Accept':
+-                                          'text/html, application/json'})
++        resp = self.request("/wok", headers={'Accept':
++                                             'text/html, application/json'})
+         self.assertValidJSON(resp.read())
+ 
+         h = {'Accept': 'text/plain'}
+-        resp = self.request('/', None, 'GET', h)
++        resp = self.request('/wok', None, 'GET', h)
+         self.assertEquals(406, resp.status)
+ 
+     def test_auth_unprotected(self):
+         hdrs = {'AUTHORIZATION': ''}
+-        uris = ['/js/wok.min.js',
+-                '/css/theme-default.min.css',
+-                '/images/favicon.png',
+-                '/libs/jquery/jquery.min.js',
+-                '/login.html',
+-                '/logout']
++        uris = ['/wok/js/wok.min.js',
++                '/wok/css/theme-default.min.css',
++                '/wok/images/favicon.png',
++                '/wok/libs/jquery/jquery.min.js',
++                '/wok/login.html',
++                '/wok/logout']
+ 
+         for uri in uris:
+             resp = self.request(uri, None, 'HEAD', hdrs)
+@@ -179,7 +179,7 @@ class ServerTests(unittest.TestCase):
+ 
+     def test_auth_protected(self):
+         hdrs = {'AUTHORIZATION': ''}
+-        uris = ['/tasks']
++        uris = ['/wok/tasks']
+ 
+         for uri in uris:
+             resp = self.request(uri, None, 'GET', hdrs)
+@@ -188,13 +188,13 @@ class ServerTests(unittest.TestCase):
+     def test_auth_bad_creds(self):
+         # Test HTTPBA
+         hdrs = {'AUTHORIZATION': "Basic " + base64.b64encode("nouser:badpass")}
+-        resp = self.request('/tasks', None, 'GET', hdrs)
++        resp = self.request('/wok/tasks', None, 'GET', hdrs)
+         self.assertEquals(401, resp.status)
+ 
+         # Test REST API
+         hdrs = {'AUTHORIZATION': ''}
+         req = json.dumps({'username': 'nouser', 'password': 'badpass'})
+-        resp = self.request('/login', req, 'POST', hdrs)
++        resp = self.request('/wok/login', req, 'POST', hdrs)
+         self.assertEquals(401, resp.status)
+ 
+     def test_auth_browser_no_httpba(self):
+@@ -203,7 +203,7 @@ class ServerTests(unittest.TestCase):
+         hdrs = {"X-Requested-With": "XMLHttpRequest"}
+ 
+         # Try our request (Note that request() will add a valid HTTPBA header)
+-        resp = self.request('/tasks', None, 'GET', hdrs)
++        resp = self.request('/wok/tasks', None, 'GET', hdrs)
+         self.assertEquals(401, resp.status)
+         self.assertEquals(None, resp.getheader('WWW-Authenticate'))
+ 
+@@ -213,13 +213,13 @@ class ServerTests(unittest.TestCase):
+                 'Accept': 'application/json'}
+ 
+         # Test we are logged out
+-        resp = self.request('/tasks', None, 'GET', hdrs)
++        resp = self.request('/wok/tasks', None, 'GET', hdrs)
+         self.assertEquals(401, resp.status)
+ 
+         # Execute a login call
+         user, pw = utils.fake_user.items()[0]
+         req = json.dumps({'username': user, 'password': pw})
+-        resp = self.request('/login', req, 'POST', hdrs)
++        resp = self.request('/wok/login', req, 'POST', hdrs)
+         self.assertEquals(200, resp.status)
+ 
+         user_info = json.loads(resp.read())
+@@ -233,16 +233,16 @@ class ServerTests(unittest.TestCase):
+         hdrs['Cookie'] = cookie
+ 
+         # Test we are logged in with the cookie
+-        resp = self.request('/tasks', None, 'GET', hdrs)
++        resp = self.request('/wok/tasks', None, 'GET', hdrs)
+         self.assertEquals(200, resp.status)
+ 
+         # Execute a logout call
+-        resp = self.request('/logout', '{}', 'POST', hdrs)
++        resp = self.request('/wok/logout', '{}', 'POST', hdrs)
+         self.assertEquals(200, resp.status)
+         del hdrs['Cookie']
+ 
+         # Test we are logged out
+-        resp = self.request('/tasks', None, 'GET', hdrs)
++        resp = self.request('/wok/tasks', None, 'GET', hdrs)
+         self.assertEquals(401, resp.status)
+ 
+     # TODO: uncomment and adapt when some wok API accepts parameters to test
+diff --git a/tests/test_server_root.py b/tests/test_server_root.py
+index e95a13b..c978bcd 100644
+--- a/tests/test_server_root.py
++++ b/tests/test_server_root.py
+@@ -43,7 +43,7 @@ class ServerRootTests(unittest.TestCase):
+         """
+         Test reasons sanitized in production env
+         """
+-        server_root = '/test'
++        server_root = '/wok'
+         setup_server('production', server_root)
+ 
+         # check if server_root in config is the same used to start server
+@@ -55,7 +55,7 @@ class ServerRootTests(unittest.TestCase):
+         """
+         Test traceback thrown in development env
+         """
+-        server_root = '/test'
++        server_root = '/wok'
+         setup_server(server_root=server_root)
+ 
+         # check if server_root in config is the same used to start server
+diff --git a/tests/utils.py b/tests/utils.py
+index 0c10ccb..6149df2 100644
+--- a/tests/utils.py
++++ b/tests/utils.py
+@@ -88,7 +88,7 @@ if sys.version_info[:2] == (2, 6):
+     unittest.TestCase.assertNotIn = assertNotIn
+ 
+ 
+-def run_server(test_mode, model=None, environment='dev', server_root=''):
++def run_server(test_mode, model=None, environment='dev', server_root='/wok'):
+ 
+     args = type('_', (object,),
+                 {'cherrypy_port': 8010, 'max_body_size': '4*1024',
 -- 
 2.7.4
 

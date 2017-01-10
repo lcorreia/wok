@@ -1,0 +1,23 @@
+From 935bf844cb653e472439e943412d329d1d19f5ae Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Wed, 16 Nov 2016 15:43:40 -0200
+Subject: [PATCH] Use alias to fix lintian error
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ contrib/wokd.service.systemd | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/contrib/wokd.service.systemd b/contrib/wokd.service.systemd
+index 0628c2d..61673a5 100644
+--- a/contrib/wokd.service.systemd
++++ b/contrib/wokd.service.systemd
+@@ -10,4 +10,5 @@ EnvironmentFile=/etc/wok/wok.conf
+ KillMode=process
+ 
+ [Install]
++Alias=wok.service
+ WantedBy=multi-user.target
+-- 
+2.7.4
+

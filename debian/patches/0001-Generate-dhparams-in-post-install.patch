@@ -1,4 +1,4 @@
-From 2a1bc94bdc6d6f365aa9fe2d403c6a74436d8e64 Mon Sep 17 00:00:00 2001
+From 14bbed88ddaef4f54eab30af5a2748c1629c4270 Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Mon, 12 Dec 2016 10:19:16 -0200
 Subject: [PATCH] Generate dhparams in post-install
@@ -20,17 +20,17 @@ Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
  7 files changed, 11 insertions(+), 16 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 9a5297e..e03c758 100644
+index 14050d9..fe6cfa2 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -148,8 +148,6 @@ install-data-local:
+@@ -152,8 +152,6 @@ install-data-local:
  	mkdir -p $(DESTDIR)/$(localstatedir)/log/wok/
  	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-access.log
  	touch $(DESTDIR)/$(localstatedir)/log/wok/wok-error.log
 -	mkdir -p $(DESTDIR)/etc/wok/
 -	$(INSTALL_DATA) src/dhparams.pem $(DESTDIR)/etc/wok/dhparams.pem
  	mkdir -p $(DESTDIR)/etc/logrotate.d/
- 	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wok
+ 	$(INSTALL_DATA) $(top_srcdir)/src/wok.logrotate $(DESTDIR)/etc/logrotate.d/wokd
  	mkdir -p $(DESTDIR)/etc/nginx/sites-available
 diff --git a/contrib/DEBIAN/control.in b/contrib/DEBIAN/control.in
 index 16f8afc..ba083b3 100644

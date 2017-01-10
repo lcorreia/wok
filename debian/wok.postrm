@@ -2,6 +2,7 @@
 set -e
 
 if [ "$1" = "purge" ]; then
+  update-rc.d wok remove >/dev/null
   rm -Rf /etc/wok
   rm -f /etc/nginx/sites-available/wok.conf
   invoke-rc.d nginx restart

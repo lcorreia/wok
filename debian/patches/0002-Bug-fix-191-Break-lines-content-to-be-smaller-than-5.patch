@@ -1,4 +1,4 @@
-From f6e408ba62711237b64bc4721460dbf5cc61265d Mon Sep 17 00:00:00 2001
+From f24c189185d8787da73a7a69e371d9a9562353c1 Mon Sep 17 00:00:00 2001
 From: Aline Manera <alinefm@linux.vnet.ibm.com>
 Date: Mon, 12 Dec 2016 13:26:34 -0200
 Subject: [PATCH 2/2] Bug fix #191: Break lines content to be smaller than 512

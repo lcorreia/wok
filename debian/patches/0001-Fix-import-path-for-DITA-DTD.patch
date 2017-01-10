@@ -1,4 +1,4 @@
-From 86fbccc5722f3007198530cfeac80cf0f14f96e4 Mon Sep 17 00:00:00 2001
+From c39cf201f8920e95f9b0182d2c5c41aa3bf51818 Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Wed, 4 Jan 2017 14:44:36 -0200
 Subject: [PATCH] Fix import path for DITA DTD

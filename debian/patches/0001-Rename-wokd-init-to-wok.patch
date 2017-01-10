@@ -1,0 +1,67 @@
+From b1b2b7b01d99b43d73bbc216173a4df184f3e668 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Thu, 12 Jan 2017 11:15:23 -0200
+Subject: [PATCH] Rename wokd init to wok
+
+---
+ Makefile.am           | 6 +++---
+ contrib/wokd.sysvinit | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index fe71fc7..3e364bd 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -138,8 +138,8 @@ install-data-local:
+ 	mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
+ 	$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+ 	mkdir -p $(DESTDIR)/etc/init.d/; \
+-	$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
+-	chmod +x $(DESTDIR)/etc/init.d/wokd; \
++	$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wok; \
++	chmod +x $(DESTDIR)/etc/init.d/wok; \
+ 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services/;
+ 	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml;
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/lib/wok/
+@@ -153,7 +153,7 @@ install-data-local:
+ 
+ uninstall-local:
+ 	$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+-	$(RM) $(DESTDIR)/etc/init.d/wokd; \
++	$(RM) $(DESTDIR)/etc/init.d/wok; \
+ 	$(RM) $(DESTDIR)/etc/init/wok.conf; \
+ 	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml
+ 	rmdir $(DESTDIR)/usr/lib/firewalld/services && rmdir $(DESTDIR)/usr/lib/firewalld || :
+diff --git a/contrib/wokd.sysvinit b/contrib/wokd.sysvinit
+index 80420a5..39fbdb9 100644
+--- a/contrib/wokd.sysvinit
++++ b/contrib/wokd.sysvinit
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ #
+-# wokd         Wok Web Server
++# wok         Wok Web Server
+ #
+ # Copyright IBM Corp, 2015-2017
+ #
+@@ -22,7 +22,7 @@
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ #
+ ### BEGIN INIT INFO
+-# Provides:          wokd
++# Provides:          wok
+ # Required-Start:    $local_fs $network $remote_fs $syslog
+ # Required-Stop:     $local_fs $network $remote_fs $syslog
+ # Default-Start:     2 3 4 5
+@@ -38,7 +38,7 @@
+ PATH=/sbin:/usr/sbin:/bin:/usr/bin
+ CONF=/etc/default/wok
+ DESC="wok"
+-NAME=wokd
++NAME=wok
+ DAEMON=/usr/bin/wokd
+ DAEMON_ARGS=""
+ PIDFILE=/var/run/$NAME.pid
+-- 
+2.7.4
+

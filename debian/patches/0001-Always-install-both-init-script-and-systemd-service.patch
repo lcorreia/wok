@@ -1,0 +1,107 @@
+From 357339ae443da7e8e516d4c9d0cdd08f621e7b9a Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Wed, 11 Jan 2017 12:17:36 -0200
+Subject: [PATCH] [Wok] Always install both init script and systemd service
+
+Currently configure.ac checks if systemd is installed, and
+generates a Makefile that does not install systemd service
+if it's built on a system without systemd. Ideally this
+should be done on package's post-install phase, but it's
+not necessary since init scripts and systemd service can
+live together.
+
+This patch adds a default/hardcoded value for systemd
+directory, which makes its service is installed on default
+place even if configured on a system withtout systemd.
+
+It also changes Makefiles to always install both init
+script and systemd service.
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ Makefile.am  | 37 ++++++++++++++-----------------------
+ configure.ac |  6 ++----
+ 2 files changed, 16 insertions(+), 27 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index fe6cfa2..fe71fc7 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -88,15 +88,12 @@ all-local:
+ 
+ install-deb: install
+ 	cp -R $(top_srcdir)/contrib/DEBIAN $(DESTDIR)/
+-	@if test -d "$(systemdsystemunitdir)" ; then \
+-		$(MKDIR_P) $(DESTDIR)/$(systemdsystemunitdir); \
+-		cp -R contrib/wokd.service.systemd \
+-			$(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+-	else \
+-		$(MKDIR_P) $(DESTDIR)/etc/init; \
+-		cp -R $(top_srcdir)/contrib/wokd-upstart.conf.debian \
+-			$(DESTDIR)/etc/init/wokd.conf; \
+-	fi
++	$(MKDIR_P) $(DESTDIR)/$(systemdsystemunitdir); \
++	cp -R contrib/wokd.service.systemd \
++		$(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
++	$(MKDIR_P) $(DESTDIR)/etc/init; \
++	cp -R $(top_srcdir)/contrib/wokd-upstart.conf.debian \
++		$(DESTDIR)/etc/init/wokd.conf; \
+ 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/lib/wok/
+ 	$(MKDIR_P) $(DESTDIR)/usr/lib/firewalld/services
+ 	cp -R $(top_srcdir)/src/firewalld.xml \
+@@ -138,14 +135,11 @@ ChangeLog:
+ 	fi
+ 
+ install-data-local:
+-	@if test -d "$(systemdsystemunitdir)" ; then \
+-		mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
+-		$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+-	else \
+-		mkdir -p $(DESTDIR)/etc/init.d/; \
+-		$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
+-		chmod +x $(DESTDIR)/etc/init.d/wokd; \
+-	fi; \
++	mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
++	$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
++	mkdir -p $(DESTDIR)/etc/init.d/; \
++	$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
++	chmod +x $(DESTDIR)/etc/init.d/wokd; \
+ 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services/;
+ 	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml;
+ 	mkdir -p $(DESTDIR)/$(localstatedir)/lib/wok/
+@@ -158,12 +152,9 @@ install-data-local:
+ 	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/sites-available/wok.conf
+ 
+ uninstall-local:
+-	@if test -f $(systemdsystemunitdir)/wokd.service; then \
+-		$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+-	elif test -f /etc/init.d/wokd; then \
+-		$(RM) $(DESTDIR)/etc/init.d/wokd; \
+-		$(RM) $(DESTDIR)/etc/init/wok.conf; \
+-	fi; \
++	$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
++	$(RM) $(DESTDIR)/etc/init.d/wokd; \
++	$(RM) $(DESTDIR)/etc/init/wok.conf; \
+ 	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml
+ 	rmdir $(DESTDIR)/usr/lib/firewalld/services && rmdir $(DESTDIR)/usr/lib/firewalld || :
+ 	$(RM) -rf $(DESTDIR)/$(localstatedir)/lib/wok
+diff --git a/configure.ac b/configure.ac
+index fbc531b..40f7f11 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -56,10 +56,8 @@ fi
+ PKG_PROG_PKG_CONFIG
+ AC_ARG_WITH([systemdsystemunitdir],
+     AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
+-    [], [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+-if test "x$with_systemdsystemunitdir" != xno; then
+-    AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+-fi
++    [], [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd || echo "/lib/systemd/system")])
++AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+ 
+ AC_ARG_WITH(
+     [spice-html5],
+-- 
+2.7.4
+

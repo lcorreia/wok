@@ -1,4 +1,4 @@
-From 85d1b12087a6427173a9ac4e980aaaecb736626c Mon Sep 17 00:00:00 2001
+From 19acb66ea514b2071f9e12f6912170c0c8b1ef00 Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Mon, 12 Dec 2016 18:39:26 -0200
 Subject: [PATCH] Update Datatables, Switch and Editable libraries

@@ -11,8 +11,11 @@ if [ "$1" = "configure" ]; then
     -subj "/C=US/CN=wok/O=kimchi-project.org" >/dev/null 2>&1
   [ "$2" ] || ln -sf /etc/nginx/sites-available/wok.conf \
                      /etc/nginx/sites-enabled/wok.conf
+  if [ -x "/etc/init.d/wok" ]; then
+    update-rc.d wok defaults >/dev/null
+  fi
   invoke-rc.d nginx restart
-  invoke-rc.d wok restart
+  invoke-rc.d wok restart || exit $?
 fi
 
 #DEBHELPER#

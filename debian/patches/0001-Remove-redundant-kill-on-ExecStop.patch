@@ -1,4 +1,4 @@
-From af1be191e6180a775233148a9965c976389a9828 Mon Sep 17 00:00:00 2001
+From d32f44c3f8a2b3245e73ff2f8389912dceaed13e Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Thu, 29 Dec 2016 10:12:52 -0200
 Subject: [PATCH] Remove redundant kill on ExecStop

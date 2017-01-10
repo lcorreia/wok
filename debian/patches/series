@@ -11,7 +11,7 @@
 0001-Serve-wok-from-relative-path-wok.patch
 0001-Adapt-nginx-configuration.patch
 0001-Always-install-firewalld-conf-for-all-distributions.patch
-0001-Rename-wokd-to-wok.patch
+0001-Use-alias-to-fix-lintian-error.patch
 0001-Fix-fonts-path-to-be-relative.patch
 0001-Generate-dhparams-in-post-install.patch
 0001-Bug-fix-191-Add-updated-lodash.min.js-file.patch
@@ -20,3 +20,6 @@
 0001-Remove-execution-permission-from-css-files.patch
 0001-Remove-redundant-kill-on-ExecStop.patch
 0001-Fix-import-path-for-DITA-DTD.patch
+0001-Always-install-both-init-script-and-systemd-service.patch
+0001-Adapt-init-script-to-debian-requirements.patch
+0001-Rename-wokd-init-to-wok.patch
