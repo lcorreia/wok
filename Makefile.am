@@ -88,15 +88,12 @@ all-local:
 
 install-deb: install
 	cp -R $(top_srcdir)/contrib/DEBIAN $(DESTDIR)/
-	@if test -d "$(systemdsystemunitdir)" ; then \
-		$(MKDIR_P) $(DESTDIR)/$(systemdsystemunitdir); \
-		cp -R contrib/wokd.service.systemd \
-			$(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
-	else \
-		$(MKDIR_P) $(DESTDIR)/etc/init; \
-		cp -R $(top_srcdir)/contrib/wokd-upstart.conf.debian \
-			$(DESTDIR)/etc/init/wokd.conf; \
-	fi
+	$(MKDIR_P) $(DESTDIR)/$(systemdsystemunitdir); \
+	cp -R contrib/wokd.service.systemd \
+		$(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+	$(MKDIR_P) $(DESTDIR)/etc/init; \
+	cp -R $(top_srcdir)/contrib/wokd-upstart.conf.debian \
+		$(DESTDIR)/etc/init/wokd.conf; \
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/lib/wok/
 	$(MKDIR_P) $(DESTDIR)/usr/lib/firewalld/services
 	cp -R $(top_srcdir)/src/firewalld.xml \
@@ -138,14 +135,11 @@ ChangeLog:
 	fi
 
 install-data-local:
-	@if test -d "$(systemdsystemunitdir)" ; then \
-		mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
-		$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
-	else \
-		mkdir -p $(DESTDIR)/etc/init.d/; \
-		$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
-		chmod +x $(DESTDIR)/etc/init.d/wokd; \
-	fi; \
+	mkdir -p $(DESTDIR)/$(systemdsystemunitdir); \
+	$(INSTALL_DATA) contrib/wokd.service.systemd $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+	mkdir -p $(DESTDIR)/etc/init.d/; \
+	$(INSTALL_DATA) contrib/wokd.sysvinit $(DESTDIR)/etc/init.d/wokd; \
+	chmod +x $(DESTDIR)/etc/init.d/wokd; \
 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services/;
 	$(INSTALL_DATA) src/firewalld.xml $(DESTDIR)/usr/lib/firewalld/services/wokd.xml;
 	mkdir -p $(DESTDIR)/$(localstatedir)/lib/wok/
@@ -158,12 +152,9 @@ install-data-local:
 	$(INSTALL_DATA) $(top_srcdir)/src/nginx/wok.conf $(DESTDIR)/etc/nginx/sites-available/wok.conf
 
 uninstall-local:
-	@if test -f $(systemdsystemunitdir)/wokd.service; then \
-		$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
-	elif test -f /etc/init.d/wokd; then \
-		$(RM) $(DESTDIR)/etc/init.d/wokd; \
-		$(RM) $(DESTDIR)/etc/init/wok.conf; \
-	fi; \
+	$(RM) $(DESTDIR)/$(systemdsystemunitdir)/wokd.service; \
+	$(RM) $(DESTDIR)/etc/init.d/wokd; \
+	$(RM) $(DESTDIR)/etc/init/wok.conf; \
 	$(RM) $(DESTDIR)/usr/lib/firewalld/services/wokd.xml
 	rmdir $(DESTDIR)/usr/lib/firewalld/services && rmdir $(DESTDIR)/usr/lib/firewalld || :
 	$(RM) -rf $(DESTDIR)/$(localstatedir)/lib/wok
