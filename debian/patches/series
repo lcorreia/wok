@@ -23,3 +23,4 @@
 0001-Always-install-both-init-script-and-systemd-service.patch
 0001-Adapt-init-script-to-debian-requirements.patch
 0001-Rename-wokd-init-to-wok.patch
+0001-Add-Documentation-for-systemd-service.patch

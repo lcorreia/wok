@@ -1,0 +1,27 @@
+From 84e5cd51a0a496ad55fb8d949e23e4dcaa219844 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Thu, 12 Jan 2017 11:31:21 -0200
+Subject: [PATCH] [Wok] Add Documentation for systemd service
+
+Debian's lintian tool generates a warning when this field
+is not set.
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ contrib/wokd.service.systemd | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/contrib/wokd.service.systemd b/contrib/wokd.service.systemd
+index 61673a5..040f94e 100644
+--- a/contrib/wokd.service.systemd
++++ b/contrib/wokd.service.systemd
+@@ -1,5 +1,6 @@
+ [Unit]
+ Description=Wok - Webserver Originated from Kimchi
++Documentation=https://github.com/kimchi-project/wok/wiki
+ Wants=nginx.service
+ After=nginx.service
+ 
+-- 
+2.7.4
+
