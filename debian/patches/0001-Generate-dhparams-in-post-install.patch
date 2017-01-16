@@ -1,4 +1,4 @@
-From 14bbed88ddaef4f54eab30af5a2748c1629c4270 Mon Sep 17 00:00:00 2001
+From 45434ceac4af3f6bc7bfb9d9ea91df520613a4b6 Mon Sep 17 00:00:00 2001
 From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 Date: Mon, 12 Dec 2016 10:19:16 -0200
 Subject: [PATCH] Generate dhparams in post-install
@@ -10,14 +10,14 @@ dhparams.pem manually to run the server.
 
 Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
 ---
- Makefile.am                | 2 --
- contrib/DEBIAN/control.in  | 1 -
- contrib/DEBIAN/postinst    | 3 +++
- contrib/wok.spec.fedora.in | 4 +++-
- contrib/wok.spec.suse.in   | 4 +++-
- src/Makefile.am            | 8 +-------
- src/wok/proxy.py           | 5 +----
- 7 files changed, 11 insertions(+), 16 deletions(-)
+ Makefile.am                |  2 --
+ contrib/DEBIAN/control.in  |  1 -
+ contrib/DEBIAN/postinst    |  3 +++
+ contrib/wok.spec.fedora.in |  4 +++-
+ contrib/wok.spec.suse.in   |  4 +++-
+ src/Makefile.am            |  8 +-------
+ src/wok/proxy.py           | 13 +++++++++----
+ 7 files changed, 19 insertions(+), 16 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
 index 14050d9..fe6cfa2 100644
@@ -119,10 +119,20 @@ index abc53ec..5d169e7 100644
 -CLEANFILES = $(bin_SCRIPTS) $(BUILT_SOURCES) dhparams.pem
 +CLEANFILES = $(bin_SCRIPTS) $(BUILT_SOURCES)
 diff --git a/src/wok/proxy.py b/src/wok/proxy.py
-index 8ebb869..5ecd507 100644
+index e53597e..44581f2 100644
 --- a/src/wok/proxy.py
 +++ b/src/wok/proxy.py
-@@ -48,10 +48,7 @@ def check_proxy_config():
+@@ -30,6 +30,9 @@ from wok import sslcert
+ from wok.config import paths
+ 
+ 
++DH_COMMAND = "openssl dhparam -dsaparam -out %s 2048"
++
++
+ def check_proxy_config():
+     # When running from a installed system, there is nothing to do
+     if paths.installed:
+@@ -48,10 +51,7 @@ def check_proxy_config():
      # Create a symbolic link in system's dir to prevent errors while
      # running from source code
      symlinks = [{'target': os.path.join(paths.nginx_conf_dir, 'wok.conf'),
@@ -134,6 +144,18 @@ index 8ebb869..5ecd507 100644
      for item in symlinks:
          link = item['link']
          if os.path.isfile(link) or os.path.islink(link):
+@@ -63,6 +63,11 @@ def check_proxy_config():
+     if not os.path.exists(enabled):
+         os.symlink(os.path.join(paths.sys_nginx_conf_dir, 'wok.conf'), enabled)
+ 
++    # Generate unique Diffie-Hellman group with 2048-bit
++    dh_file = os.path.join(paths.sys_conf_dir, 'dhparams.pem')
++    if not os.path.exists(dh_file):
++        os.system(DH_COMMAND % dh_file)
++
+     # Create cert files if they don't exist
+     cert = os.path.join(paths.sys_conf_dir, 'wok-cert.pem')
+     key = os.path.join(paths.sys_conf_dir, 'wok-key.pem')
 -- 
 2.7.4
 
