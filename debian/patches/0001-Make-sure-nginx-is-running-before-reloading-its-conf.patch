@@ -1,0 +1,48 @@
+From f64ab472fef2ca339e24929826283e1518321601 Mon Sep 17 00:00:00 2001
+From: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+Date: Thu, 19 Jan 2017 16:55:14 -0200
+Subject: [PATCH] Make sure nginx is running before reloading its config
+
+Signed-off-by: Lucio Correia <luciojhc@linux.vnet.ibm.com>
+---
+ src/wok/proxy.py | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/src/wok/proxy.py b/src/wok/proxy.py
+index c778d57..757a735 100644
+--- a/src/wok/proxy.py
++++ b/src/wok/proxy.py
+@@ -28,6 +28,7 @@ import os
+ 
+ from wok import sslcert
+ from wok.config import paths
++from wok.utils import run_command
+ 
+ 
+ DH_COMMAND = "openssl dhparam -dsaparam -out %s 2048"
+@@ -64,8 +65,9 @@ def check_proxy_config():
+         os.symlink(os.path.join(paths.sys_nginx_conf_dir, 'wok.conf'), enabled)
+ 
+     # Generate unique Diffie-Hellman group with 2048-bit
+-    if not os.path.exists(os.path.join(paths.sys_conf_dir, 'dhparams.pem')):
+-        os.system(DH_COMMAND)
++    dh_file = os.path.join(paths.sys_conf_dir, 'dhparams.pem')
++    if not os.path.exists(dh_file):
++        os.system(DH_COMMAND % dh_file)
+ 
+     # Create cert files if they don't exist
+     cert = os.path.join(paths.sys_conf_dir, 'wok-cert.pem')
+@@ -79,4 +81,10 @@ def check_proxy_config():
+             f.write(ssl_gen.key_pem())
+ 
+     # Reload nginx configuration.
++    cmd = ['service', 'nginx', 'status']
++    output, error, rc = run_command(cmd)
++    if rc != 0:
++        cmd = ['service', 'nginx', 'restart']
++        output, error, rc = run_command(cmd)
++
+     os.system('nginx -s reload')
+-- 
+2.7.4
+
