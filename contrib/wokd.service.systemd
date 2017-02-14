@@ -8,7 +8,7 @@ After=nginx.service
 Type=simple
 ExecStart=/usr/bin/wokd
 EnvironmentFile=/etc/wok/wok.conf
-KillMode=process
+KillMode=control-group
 
 [Install]
 Alias=wok.service
