@@ -26,3 +26,4 @@
 0001-Rename-wokd-init-to-wok.patch
 0001-Add-Documentation-for-systemd-service.patch
 0001-Make-sure-nginx-is-running-before-reloading-its-conf.patch
+0001-Change-kill-mode-for-wokd-service.patch
